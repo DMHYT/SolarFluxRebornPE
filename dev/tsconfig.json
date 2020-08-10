@@ -1,0 +1,33 @@
+{
+	"compilerOptions": {
+		"target": "ES5",
+		"lib": [
+			"ESNext"
+		],
+		"outFile": "C:\\Users\\admin\\Desktop\\MyMods\\Solar Flux Reborn PE\\toolchain\\build\\typescript\\main.js",
+		"experimentalDecorators": true,
+		"downlevelIteration": true,
+		"allowJs": true
+	},
+	"exclude": [
+		"**/node_modules/*",
+		"dom",
+		"webpack"
+	],
+	"include": [
+		"header.js",
+		"items/details.js",
+		"core/upgradeAPI.js",
+		"core/solarRegistry.js",
+		"core/sharedAPI.js",
+		"blocks/panels.js",
+		"crafts.js",
+		"creativegroups.js",
+		"translation.js"
+	],
+	"files": [
+		"C:\\Users\\admin\\Desktop\\MyMods\\Solar Flux Reborn PE\\toolchain\\jslibs\\android-declarations.d.ts",
+		"C:\\Users\\admin\\Desktop\\MyMods\\Solar Flux Reborn PE\\toolchain\\jslibs\\android.d.ts",
+		"C:\\Users\\admin\\Desktop\\MyMods\\Solar Flux Reborn PE\\toolchain\\jslibs\\core-engine.d.ts"
+	]
+}
