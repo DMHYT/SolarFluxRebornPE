@@ -50,11 +50,13 @@ UpgradeAPI.registerUpgrade(ItemID.upgradeTrav, "trav", function(item, machine, c
         machine.energyTick = function(){
             let tiles = [];
             let val = Math.min(data.output, data.energy);
-            for(let key in EnergyTileRegistry.quickCoordAccess){
-                let tileEntity = EnergyTileRegistry.quickCoordAccess[key];
-                if(tiles.length<5) tiles.push(tileEntity);
+            let nett = EnergyNetBuilder.getNetOnCoords(machine.x, machine.y, machine.z);
+            for(let key in nett.tileEntities){
+                if(tiles.length<5){
+                    tiles.push(nett.tileEntities[key]);
+                }
             }
-            switch(EnergyNetBuilder.getNetOnCoords(machine.x, machine.y, machine.z).energyType){
+            switch(nett.energyType){
                 case "Eu":
                     for(let r in tiles){
                         tiles[r].energyReceive("Eu", Math.floor(val/tiles.length/4), Math.floor(val/tiles.length/4));

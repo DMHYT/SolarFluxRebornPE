@@ -1,5 +1,5 @@
 ModAPI.registerAPI("SolarFlux", {
-    Core: SolarRegisry,
+    Core: SolarRegistry,
     requireGlobal: function(command){
         return eval(command);
     }

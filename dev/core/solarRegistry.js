@@ -1,7 +1,7 @@
 const SolarRegistry = {
     panelIDs: {},
-    panelGUIs: [],
-    panelStats: [],
+    panelGUIs: {},
+    panelStats: {},
     isPanel: function(id){
         return this.panelIDs[id];
     },
@@ -39,7 +39,6 @@ const SolarRegistry = {
         Prototype.canReceiveEnergy = function(){
             return false;
         },
-        Prototype.energyReceive = Prototype.energyReceive || this.basicEnergyReceiveFunc;
         Prototype.isEnergySource = function(){
             return true;
         };
@@ -51,7 +50,7 @@ const SolarRegistry = {
         Block.setDestroyTime(id, 20);
         TileEntity.registerPrototype(id, Prototype);
     },
-    registerPanel: function(id, stats){
+    registerPanel: function(id, stats, header){
         this.panelStats[id] = {
             gen: stats.gen,
             output: stats.output,
@@ -59,32 +58,32 @@ const SolarRegistry = {
         }
         this.panelGUIs[id] = new UI.StandartWindow({
             standart: {
-                header: {text: {text: Translation.translate(name)}},
+                header: {text: {text: header}},
                 inventory: {standart: true},
                 background: {standart: true}
             },
             drawing: [{type: "bitmap", x: 720, y: 100, bitmap: "energy_bar_background", scale: GUI_SCALE}],
             elements: {
-                    "energyBarScale": {type: "scale", x: 800, y: 100, direction: 1, value: 0.5, bitmap: "energy_bar_scale", scale: GUI_SCALE},
-                    "textStored": {type: "text", x: 350, y: 100, width: 300, height: 30, text: Translation.translate("Stored")+": 0 FE"},   
-                    "textCap": {type: "text", x: 350, y: 130, width: 300, height: 30, text: Translation.translate("Capacity")+": "+Math.round(this.panelStats[id].energy_storage)+" FE"},
-                    "textGen": {type: "text", x: 350, y: 160, width: 300, height: 30, text: Translation.translate("Generation")+": 0 FE/"+Translation.translate("tick")},
-                    "slotUpgrade1": {type: "slot", x: 350, y: 270, isValid: UpgradeAPI.isValidUpgrade},
-                    "slotUpgrade2": {type: "slot", x: 414, y: 270, isValid: UpgradeAPI.isValidUpgrade},
-                    "slotUpgrade3": {type: "slot", x: 480, y: 270, isValid: UpgradeAPI.isValidUpgrade},
-                    "slotUpgrade4": {type: "slot", x: 544, y: 270, isValid: UpgradeAPI.isValidUpgrade}, 
-                    "slotUpgrade5": {type: "slot", x: 610, y: 270, isValid: UpgradeAPI.isValidUpgrade},
-                    "slotCharge1": {type: "slot", x: 820, y: 100, bitmap: "charge_slot", isValid: function(id){return ChargeItemRegistry.getItemData(id)}},
+                "energyBarScale": {type: "scale", x: 800, y: 100, direction: 1, value: 0.5, bitmap: "energy_bar_scale", scale: GUI_SCALE},
+                "textStored": {type: "text", x: 350, y: 100, width: 300, height: 30, text: Translation.translate("Stored")+": 0 FE"},   
+                "textCap": {type: "text", x: 350, y: 130, width: 300, height: 30, text: Translation.translate("Capacity")+": "+Math.round(this.panelStats[id].energy_storage)+" FE"},
+                "textGen": {type: "text", x: 350, y: 160, width: 300, height: 30, text: Translation.translate("Generation")+": 0 FE/"+Translation.translate("tick")},
+                "slotUpgrade1": {type: "slot", x: 350, y: 270, isValid: UpgradeAPI.isValidUpgrade},
+                "slotUpgrade2": {type: "slot", x: 414, y: 270, isValid: UpgradeAPI.isValidUpgrade},
+                "slotUpgrade3": {type: "slot", x: 480, y: 270, isValid: UpgradeAPI.isValidUpgrade},
+                "slotUpgrade4": {type: "slot", x: 544, y: 270, isValid: UpgradeAPI.isValidUpgrade}, 
+                "slotUpgrade5": {type: "slot", x: 610, y: 270, isValid: UpgradeAPI.isValidUpgrade},
+                "slotCharge1": {type: "slot", x: 820, y: 100, bitmap: "charge_slot", isValid: function(id){return ChargeItemRegistry.getItemData(id)}},
             }
         });
         Callback.addCallback("LevelLoaded", function(){
-            this.updateGuiHeader(this.panelGUIs[id], )
+            this.updateGuiHeader(this.panelGUIs[id], header);
         });
         this.registerPrototype(id, {
             defaultValues: {
-                gen: panel[id].gen,
-                output: panel[id].output,
-                energy_storage: panel[id].energy_storage,
+                gen: SolarRegistry.panelStats[id].gen,
+                output: SolarRegistry.panelStats[id].output,
+                energy_storage: SolarRegistry.panelStats[id].energy_storage,
             },
             upgrades: ["eff", "transf", "cap", "trav", "disp", "bcharge", "furn"],
             getEnergyStorage: function(){
@@ -157,23 +156,5 @@ const SolarRegistry = {
     updateGuiHeader: function(gui, text){
         var header = gui.getWindow("header");
         header.contentProvider.drawing[1].text = Translation.translate(text);
-    },
-    basicEnergyReceiveFunc: function(type, amount, voltage) {
-        var maxVoltage = this.getMaxPacketSize();
-        if(voltage > maxVoltage){
-            if(Config.voltageEnabled){
-                World.setBlock(this.x, this.y, this.z, 0);
-                World.explode(this.x + 0.5, this.y + 0.5, this.z + 0.5, 1.2, true);
-                this.selfDestroy();
-                return 1;
-            }
-            var add = Math.min(maxVoltage, this.getEnergyStorage() - this.data.energy);
-        } else {
-            var add = Math.min(amount, this.getEnergyStorage() - this.data.energy);
-        }
-        this.data.energy += add;
-        this.data.energy_receive += add;
-        this.data.voltage = Math.max(this.data.voltage, voltage);
-        return add;
     },
 }
