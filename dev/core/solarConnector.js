@@ -101,7 +101,9 @@ const SolarConnector = {
     },
     setConnectablePanel: function(id){
         Block.setShape(id, 0, 0, 0, 1, 13/32, 1);
-        BlockRenderer.enableCoordMapping(id, -1, this.list[id].renders[0]);
+        if(this.list[id]){
+            BlockRenderer.enableCoordMapping(id, -1, this.list[id].renders[0]);
+        } else return Logger.Log("renders for panel not defined while calling 'SolarConnector.setConnectablePanel' method", "SolarFluxRebornAPI DEBUG ERROR");
         Block.registerNeighbourChangeFunction(id, function(coords, block, changedCoords){
             if(World.getBlockID(changedCoords.x, changedCoords.x, changedCoords.z)==id){
                 SolarConnector.update(coords);
