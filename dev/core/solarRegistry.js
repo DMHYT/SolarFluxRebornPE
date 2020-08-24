@@ -24,6 +24,7 @@ const SolarRegistry = {
         Prototype.upgrades = ["eff", "transf", "cap", "furn", "trav", "disp", "bcharge"];
         Prototype.init = function(){
             Prototype.data.canSeeSky = GenerationUtils.canSeeSky(Prototype.x, Prototype.y + 1, Prototype.z);
+            SolarConnector.update(Prototype);
         },
         Prototype.getTransportSlots = function(){
             return {input: []};
@@ -50,7 +51,9 @@ const SolarRegistry = {
         Block.setDestroyTime(id, 20);
         TileEntity.registerPrototype(id, Prototype);
     },
-    registerPanel: function(id, stats, header){
+    registerPanel: function(id, stats, header, textures){
+        SolarConnector.createModelsForPanel(id, textures.top, textures.base);
+        SolarConnector.setConnectablePanel(id);
         this.panelStats[id] = {
             gen: stats.gen,
             output: stats.output,
@@ -77,7 +80,7 @@ const SolarRegistry = {
             }
         });
         Callback.addCallback("LevelLoaded", function(){
-            this.updateGuiHeader(this.panelGUIs[id], header);
+            SolarRegistry.updateGuiHeader(SolarRegistry.panelGUIs[id], header);
         });
         this.registerPrototype(id, {
             defaultValues: {

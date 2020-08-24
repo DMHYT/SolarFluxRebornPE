@@ -15,16 +15,24 @@
     Block.createBlock("panel6", [{name: "Solar panel VI", texture: [["panel6_base", 0], ["panel6_top", 0], ["panel6_base", 0]], inCreative: true}]);
     Block.createBlock("panel7", [{name: "Solar panel VII", texture: [["panel7_base", 0], ["panel7_top", 0], ["panel7_base", 0]], inCreative: true}]);
     Block.createBlock("panel8", [{name: "Solar panel VIII", texture: [["panel8_base", 0], ["panel8_top", 0], ["panel8_base", 0]], inCreative: true}]);
-    for(var i=1; i<=8; i++){
-        Block.setBlockShape(BlockID["panel"+i], {x: 0, y: 0, z: 0}, {x: 1, y: 0.375, z: 1});
-    }
 })();
 
-SolarRegistry.registerPanel(BlockID.panel1, {gen: 1, output: 8, energy_storage: 2.5e4}, Translation.translate("Solar panel I"));
-SolarRegistry.registerPanel(BlockID.panel2, {gen: 8, output: 64, energy_storage: 1.25e5}, Translation.translate("Solar panel II"));
-SolarRegistry.registerPanel(BlockID.panel3, {gen: 32, output: 256, energy_storage: 4.25e5}, Translation.translate("Solar panel III"));
-SolarRegistry.registerPanel(BlockID.panel4, {gen: 128, output: 1024, energy_storage: 2e6}, Translation.translate("Solar panel IV"));
-SolarRegistry.registerPanel(BlockID.panel5, {gen: 512, output: 4096, energy_storage: 8e6}, Translation.translate("Solar panel V"));
-SolarRegistry.registerPanel(BlockID.panel6, {gen: 2048, output: 16384, energy_storage: 3.2e7}, Translation.translate("Solar panel VI"));
-SolarRegistry.registerPanel(BlockID.panel7, {gen: 8192, output: 6.4e4, energy_storage: 6.4e7}, Translation.translate("Solar panel VII"));
-SolarRegistry.registerPanel(BlockID.panel8, {gen: 32768, output: 2.56e5, energy_storage: 1.28e8}, Translation.translate("Solar panel VIII"));
+SolarRegistry.registerPanel(BlockID.panel1, {gen: 1, output: 8, energy_storage: 2.5e4}, Translation.translate("Solar panel I"), {top: "panel1_top", base: "panel1_base"});
+SolarRegistry.registerPanel(BlockID.panel2, {gen: 8, output: 64, energy_storage: 1.25e5}, Translation.translate("Solar panel II"), {top: "panel2_top", base: "panel2_base"});
+SolarRegistry.registerPanel(BlockID.panel3, {gen: 32, output: 256, energy_storage: 4.25e5}, Translation.translate("Solar panel III"), {top: "panel3_top", base: "panel3_base"});
+SolarRegistry.registerPanel(BlockID.panel4, {gen: 128, output: 1024, energy_storage: 2e6}, Translation.translate("Solar panel IV"), {top: "panel4_top", base: "panel4_base"});
+SolarRegistry.registerPanel(BlockID.panel5, {gen: 512, output: 4096, energy_storage: 8e6}, Translation.translate("Solar panel V"), {top: "panel5_top", base: "panel5_base"});
+SolarRegistry.registerPanel(BlockID.panel6, {gen: 2048, output: 16384, energy_storage: 3.2e7}, Translation.translate("Solar panel VI"), {top: "panel6_top", base: "panel6_base"});
+SolarRegistry.registerPanel(BlockID.panel7, {gen: 8192, output: 6.4e4, energy_storage: 6.4e7}, Translation.translate("Solar panel VII"), {top: "panel7_top", base: "panel7_base"});
+SolarRegistry.registerPanel(BlockID.panel8, {gen: 32768, output: 2.56e5, energy_storage: 1.28e8}, Translation.translate("Solar panel VIII"), {top: "panel8_top", base: "panel8_base"});
+
+Callback.addCallback("BuildBlock", function(coords, block, player){
+    if(SolarRegistry.isPanel(block.id)){
+        SolarConnector.update(coords.relative);
+    }
+});
+Callback.addCallback("DestroyBlock", function(coords, block, player){
+    if(SolarRegistry.isPanel(block.id)){
+        BlockRenderer.unmapAtCoords(coords.x, coords.y, coords.z);
+    }
+});
