@@ -44,12 +44,12 @@ const SolarRegistry = {
             return true;
         };
         Prototype.isTeleporterCompatible = true;
-        for(let e in energyTypes){
-            EnergyTileRegistry.addEnergyTypeForId(id, energyTypes[e]);
-        }
         ToolAPI.registerBlockMaterial(id, "stone", 1, true);
         Block.setDestroyTime(id, 20);
         TileEntity.registerPrototype(id, Prototype);
+        for(let e in energyTypes){
+            EnergyTileRegistry.addEnergyTypeForId(id, energyTypes[e]);
+        }
     },
     registerPanel: function(id, stats, header, textures){
         SolarConnector.createModelsForPanel(id, textures.top, textures.base);
@@ -93,7 +93,7 @@ const SolarRegistry = {
                 return Math.round(this.data.energy_storage)
             },
             getGuiScreen: function(){
-                return guiPanel[id]
+                return SolarRegistry.panelGUIs[id]
             },
             resetValues: function(){
                 this.data.gen = this.defaultValues.gen;
