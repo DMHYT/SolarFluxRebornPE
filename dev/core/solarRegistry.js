@@ -160,4 +160,4 @@ const SolarRegistry = {
         var header = gui.getWindow("header");
         header.contentProvider.drawing[1].text = Translation.translate(text);
     },
-}
+};

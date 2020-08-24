@@ -15,8 +15,6 @@ const SolarConnector = {
         model.addBox(0, 0, 0, 1, 6/16, 1, [[tex[1], 0], [tex[0], 0], [tex[1], 0]]);
     },
     quickModel: function(render, model, cubes, tex){
-        render = new ICRender.Model();
-        model = new BlockRenderer.Model();
         this.baseCube(model, tex);
         for(let i in cubes){
             let k = cubes[i];
@@ -29,6 +27,10 @@ const SolarConnector = {
         let idd = this.list[id] = {};
         idd.renders = [];
         idd.models = [];
+        for(let i=0; i<=15; i++){
+            idd.renders[i] = new ICRender.Model();
+            idd.models[i] = new BlockRenderer.Model();
+        }
         //no connects
         this.quickModel(idd.renders[0], idd.models[0], [
             [0, 6/16, 0, 1, 6.4/16, 1/16], [0, 6/16, 15/16, 1, 6.4/16, 1], [0, 6/16, 1/16, 1/16, 6.4/16, 15/16], [15/16, 6/16, 1/16, 1, 6.4/16, 15/16]
@@ -95,8 +97,6 @@ const SolarConnector = {
         ], tex);
         //------------------------------
         //connect ALL (x+1, x-1, z+1, z-1)
-        idd.renders[15] = new ICRender.Model();
-        idd.models[15] = new BlockRenderer.Model();
         this.baseCube(idd.models[15], tex);
     },
     setConnectablePanel: function(id){
