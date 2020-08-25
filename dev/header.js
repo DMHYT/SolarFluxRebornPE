@@ -10,16 +10,21 @@
 */
 
 //© vstannumdum 2020
-//YouTube DMH
-//vk.com/vstannumdum
+//YouTube DMH (Russian)
+//My VK - https://www.vk.com/vstannumdum
+//Report bugs in VK Public - https://www.vk.com/dmhmods
 
 IMPORT("EnergyNet");
 IMPORT("ChargeItem");
 IMPORT("StorageInterface");
 
-const GUI_SCALE = 3.2
+const GUI_SCALE = 3.2;
 const EU = EnergyTypeRegistry.assureEnergyType("Eu", 1);
 const RF = EnergyTypeRegistry.assureEnergyType("energyRF", 1/4);
 const FE = EnergyTypeRegistry.assureEnergyType("FE", 1/4);
 const energyTypes = [EU, RF, FE];
 const p = Player.get();
+
+Callback.addCallback("LevelLoaded", function(){
+    Game.message("§4Solar§eFlux§1Reborn§aPE §l§6by vstannumdum 2020");
+});

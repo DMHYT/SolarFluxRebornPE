@@ -1,3 +1,68 @@
+const panelProto = {
+    upgrades: ["eff", "transf", "cap", "furn", "trav", "disp", "bcharge"],
+    getTransportSlots: function(){ return {input: []}; },
+    getTier: function(){ return 1; },
+    canReceiveEnergy: function(){ return false; },
+    isEnergySource: function(){ return true; },
+    onItemClick: function(id, count, data, coords){
+        if (id == ItemID.debugItem || id == ItemID.EUMeter) return false;
+        if (this.click(id, count, data, coords)) return true;
+        if (Entity.getSneaking(p)) return false;
+        var gui = this.getGuiScreen();
+        if (gui){
+            this.container.openAs(gui);
+            return true;
+        }
+    },
+    setActive: function(isActive){
+		if(this.data.isActive != isActive){
+			this.data.isActive = isActive;
+		}
+    },
+    activate: function(){ this.setActive(true); },
+    deactivate: function(){ this.setActive(false); },
+    destroy: function(){ BlockRenderer.unmapAtCoords(this.x, this.y, this.z); },
+    init: function(){
+        this.data.canSeeSky = GenerationUtils.canSeeSky(this.x, this.y + 1, this.z);
+        SolarConnector.update(this);
+    },
+    resetValues: function(){
+        this.data.gen = this.defaultValues.gen;
+        this.data.output = this.defaultValues.output;
+        this.data.energy_storage = this.defaultValues.energy_storage;
+    },
+    getItemEnergyType: function(){
+        return ChargeItemRegistry.chargeData[this.container.getSlot("slotCharge1").id].energy;
+    },
+    tick: function(){
+        this.resetValues();
+        UpgradeAPI.executeUpgrades(this);
+        if(World.getThreadTime()%100 == 0){
+            this.data.canSeeSky = GenerationUtils.canSeeSky(this.x, this.y + 1, this.z);
+        }
+        if(this.data.canSeeSky){
+            var time = World.getWorldTime()%24000;
+            if((time >= 23500 || time < 12550) && (!World.getWeather().rain || World.getLightLevel(this.x, this.y+1, this.z) > 14)){
+                this.data.energy = Math.min(this.data.energy + this.data.gen, this.getEnergyStorage());
+                this.container.setText("textGen", Translation.translate("Generation")+": "+Math.round(this.data.gen)+" FE/"+Translation.translate("tick"));
+            }
+        } else {
+            this.container.setText("textGen", Translation.translate("Generation")+" FE/"+Translation.translate("tick"));
+        }
+        let chSlot = this.container.getSlot("slotCharge1");
+        let ratio = EnergyTypeRegistry.getValueRatio(this.getItemEnergyType(), "FE");
+        this.data.energy -= ChargeItemRegistry.addEnergyTo(chSlot, this.getItemEnergyType(), Math.floor(this.data.energy / ratio)) * ratio;
+        this.container.setScale("energyBarScale", this.data.energy / this.getEnergyStorage());
+        this.container.setText("textStored", Translation.translate("Stored")+": "+this.data.energy+" FE");
+    },
+    energyTick: function(){
+        var output = Math.min(this.data.output, this.data.energy);
+        let net = EnergyNetBuilder.getNetOnCoords(this.x, this.y, this.z);
+        let ratio = EnergyTypeRegistry.getValueRatio(net.energyType, "FE");
+        this.data.energy += src.add(output * ratio) - (output * ratio);
+    }
+}
+
 const SolarRegistry = {
     panelIDs: {},
     panelGUIs: {},
@@ -5,53 +70,10 @@ const SolarRegistry = {
     isPanel: function(id){
         return this.panelIDs[id];
     },
-    registerPrototype: function(id, Prototype){
+    registerPanel: function(id, stats, header, textures){
         this.panelIDs[id] = true;
-        Prototype.onItemClick = Prototype.onItemClick || function(id, count, data, coords){
-            if (id == ItemID.debugItem || id == ItemID.EUMeter) return false;
-            if (this.click(id, count, data, coords)) return true;
-            if (Entity.getSneaking(p)) return false;
-            var gui = this.getGuiScreen();
-            if (gui){
-                this.container.openAs(gui);
-                return true;
-            }
-        };
-        if(Prototype.defaultValues){
-            Prototype.defaultValues.canSeeSky = false;
-            Prototype.defaultValues.energy = 0;
-        } else Prototype.defaultValues = {canSeeSky: false, energy: 0};
-        Prototype.upgrades = ["eff", "transf", "cap", "furn", "trav", "disp", "bcharge"];
-        Prototype.init = function(){
-            Prototype.data.canSeeSky = GenerationUtils.canSeeSky(Prototype.x, Prototype.y + 1, Prototype.z);
-            SolarConnector.update(Prototype);
-        },
-        Prototype.getTransportSlots = function(){
-            return {input: []};
-        },
-        Prototype.getTier = Prototype.getTier || function(){
-            return 1;
-        }
-        if(!Prototype.getEnergyStorage){
-            Prototype.getEnergyStorage = function(){
-                return 0;
-            };
-        }
-        Prototype.canReceiveEnergy = function(){
-            return false;
-        },
-        Prototype.isEnergySource = function(){
-            return true;
-        };
-        Prototype.isTeleporterCompatible = true;
         ToolAPI.registerBlockMaterial(id, "stone", 1, true);
         Block.setDestroyTime(id, 20);
-        TileEntity.registerPrototype(id, Prototype);
-        for(let e in energyTypes){
-            EnergyTileRegistry.addEnergyTypeForId(id, energyTypes[e]);
-        }
-    },
-    registerPanel: function(id, stats, header, textures){
         SolarConnector.createModelsForPanel(id, textures.top, textures.base);
         SolarConnector.setConnectablePanel(id);
         this.panelStats[id] = {
@@ -82,71 +104,34 @@ const SolarRegistry = {
         Callback.addCallback("LevelLoaded", function(){
             SolarRegistry.updateGuiHeader(SolarRegistry.panelGUIs[id], header);
         });
-        this.registerPrototype(id, {
+        TileEntity.registerPrototype(id, {
             defaultValues: {
                 gen: SolarRegistry.panelStats[id].gen,
                 output: SolarRegistry.panelStats[id].output,
                 energy_storage: SolarRegistry.panelStats[id].energy_storage,
+                canSeeSky: false,
+                energy: 0,
+                isActive: false
             },
-            upgrades: ["eff", "transf", "cap", "trav", "disp", "bcharge", "furn"],
-            getEnergyStorage: function(){
-                return Math.round(this.data.energy_storage)
-            },
-            getGuiScreen: function(){
-                return SolarRegistry.panelGUIs[id]
-            },
-            resetValues: function(){
-                this.data.gen = this.defaultValues.gen;
-                this.data.output = this.defaultValues.output;
-                this.data.energy_storage = this.defaultValues.energy_storage;
-            },
-            getItemEnergyType: function(){
-                return ChargeItemRegistry.chargeData[this.container.getSlot("slotCharge1").id].energy;
-            },
-            tick: function(){
-                this.resetValues();
-                UpgradeAPI.executeUpgrades(this);
-                var energyStorage = this.getEnergyStorage();
-                if(World.getThreadTime()%100 == 0){
-                    this.data.canSeeSky = GenerationUtils.canSeeSky(this.x, this.y + 1, this.z);
-                }
-                if(this.data.canSeeSky){
-                    var time = World.getWorldTime()%24000;
-                    if((time >= 23500 || time < 12550) && (!World.getWeather().rain || World.getLightLevel(this.x, this.y+1, this.z) > 14)){
-                        this.data.energy = Math.min(this.data.energy + Math.round(this.data.gen), this.getEnergyStorage());
-                        this.container.setText("textGen", Translation.translate("Generation")+": "+Math.round(this.data.gen)+" FE/"+Translation.translate("tick"));
-                    }
-                } else {
-                    this.container.setText("textGen", Translation.translate("Generation")+" FE/"+Translation.translate("tick"));
-                }
-                let chSlot = this.container.getSlot("slotCharge1");
-                switch(this.getItemEnergyType()){
-                    case "Eu":
-                        this.data.energy -= ChargeItemRegistry.addEnergyTo(chSlot, "Eu", this.data.energy, Math.min(Math.round(this.data.output, (ChargeItemRegistry.getItemData(chSlot.id).maxCharge - ChargeItemRegistry.getEnergyStored(chSlot)), this.data.energy)))*4;
-                        break;
-                    case "energyRF":
-                        this.data.energy -= ChargeItemRegistry.addEnergyTo(chSlot, "energyRF", this.data.energy, Math.min(Math.round(this.data.output, (ChargeItemRegistry.getItemData(chSlot.id).maxCharge - ChargeItemRegistry.getEnergyStored(chSlot)), this.data.energy)));
-                        break;
-                    case "FE":
-                        this.data.energy -= ChargeItemRegistry.addEnergyTo(chSlot, "FE", this.data.energy, Math.min(Math.round(this.data.output, (ChargeItemRegistry.getItemData(chSlot.id).maxCharge - ChargeItemRegistry.getEnergyStored(chSlot)), this.data.energy)));
-                        break;
-                }
-                this.container.setScale("energyBarScale", this.data.energy / energyStorage);
-                this.container.setText("textStored", Translation.translate("Stored")+": "+this.data.energy+" FE");
-            },
-            energyTick: function(){
-                var output = Math.min(this.data.output, this.data.energy);
-                switch(EnergyNetBuilder.getNetOnCoords(this.x, this.y, this.z).energyType){
-                    case "Eu":
-                        src.add(Math.floor(Math.min(output/4, 8192)));
-                        break;
-                    case "energyRF":
-                    case "FE":
-                        src.add(output);
-                        break;
-                }
-            }
+            upgrades: panelProto.upgrades,
+            getTransportSlots: panelProto.getTransportSlots,
+            getTier: panelProto.getTier,
+            canReceiveEnergy: panelProto.canReceiveEnergy,
+            isEnergySource: panelProto.isEnergySource,
+            onItemClick: panelProto.onItemClick,
+            setActive: panelProto.setActive,
+            activate: panelProto.activate,
+            deactivate: panelProto.deactivate,
+            destroy: panelProto.destroy,
+            init: panelProto.init,
+            resetValues: panelProto.resetValues,
+            getItemEnergyType: panelProto.getItemEnergyType,
+            tick: panelProto.tick,
+            energyTick: panelProto.energyTick
         });
+        for(let e in energyTypes){
+            EnergyTileRegistry.addEnergyTypeForId(id, energyTypes[e]);
+        }
         StorageInterface.createInterface(id, {
             slots: {
                 "slotCharge1": {input: true}  
@@ -156,8 +141,13 @@ const SolarRegistry = {
             }
         });
     },
+    setActive: function(isActive){
+		if(this.data.isActive != isActive){
+			this.data.isActive = isActive;
+		}
+	},
     updateGuiHeader: function(gui, text){
         var header = gui.getWindow("header");
         header.contentProvider.drawing[1].text = Translation.translate(text);
-    },
+    }
 };

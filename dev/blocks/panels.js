@@ -31,8 +31,3 @@ Callback.addCallback("BuildBlock", function(coords, block, player){
         SolarConnector.update(coords.relative);
     }
 });
-Callback.addCallback("DestroyBlock", function(coords, block, player){
-    if(SolarRegistry.isPanel(block.id)){
-        BlockRenderer.unmapAtCoords(coords.x, coords.y, coords.z);
-    }
-});
