@@ -30,8 +30,10 @@ const panelProto = {
         this.data.gen = this.defaultValues.gen;
         this.data.output = this.defaultValues.output;
         this.data.energy_storage = this.defaultValues.energy_storage;
+        this.energyTick = this.defaultEnergyTick;
     },
     getItemEnergyType: function(){
+        if(ChargeItemRegistry.chargeData[this.container.getSlot("slotCharge1").id])
         return ChargeItemRegistry.chargeData[this.container.getSlot("slotCharge1").id].energy;
     },
     tick: function(){
@@ -50,16 +52,28 @@ const panelProto = {
             this.container.setText("textGen", Translation.translate("Generation")+" FE/"+Translation.translate("tick"));
         }
         let chSlot = this.container.getSlot("slotCharge1");
-        let ratio = EnergyTypeRegistry.getValueRatio(this.getItemEnergyType(), "FE");
-        this.data.energy -= ChargeItemRegistry.addEnergyTo(chSlot, this.getItemEnergyType(), Math.floor(this.data.energy / ratio)) * ratio;
+        if(chSlot.id!==0){
+            let ratio = EnergyTypeRegistry.getValueRatio(this.getItemEnergyType(), "FE");
+            this.data.energy -= ChargeItemRegistry.addEnergyTo(chSlot, this.getItemEnergyType(), Math.floor(this.data.energy / ratio)) * ratio;
+        }
         this.container.setScale("energyBarScale", this.data.energy / this.getEnergyStorage());
         this.container.setText("textStored", Translation.translate("Stored")+": "+this.data.energy+" FE");
+    },
+    defaultEnergyTick: function(){
+        var output = Math.min(this.data.output, this.data.energy);
+        let net = EnergyNetBuilder.getNetOnCoords(this.x, this.y, this.z);
+        if(net){
+            let ratio = EnergyTypeRegistry.getValueRatio(net.energyType, "FE");
+            this.data.energy += src.add(output * ratio) - (output * ratio);
+        }
     },
     energyTick: function(){
         var output = Math.min(this.data.output, this.data.energy);
         let net = EnergyNetBuilder.getNetOnCoords(this.x, this.y, this.z);
-        let ratio = EnergyTypeRegistry.getValueRatio(net.energyType, "FE");
-        this.data.energy += src.add(output * ratio) - (output * ratio);
+        if(net){
+            let ratio = EnergyTypeRegistry.getValueRatio(net.energyType, "FE");
+            this.data.energy += src.add(output * ratio) - (output * ratio);
+        }
     }
 }
 
@@ -128,6 +142,7 @@ const SolarRegistry = {
             resetValues: panelProto.resetValues,
             getItemEnergyType: panelProto.getItemEnergyType,
             tick: panelProto.tick,
+            defaultEnergyTick: panelProto.defaultEnergyTick,
             energyTick: panelProto.energyTick
         });
         for(let e in energyTypes){
