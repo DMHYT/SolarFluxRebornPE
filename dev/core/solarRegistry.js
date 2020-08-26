@@ -114,6 +114,7 @@ const SolarRegistry = {
                 isActive: false
             },
             upgrades: panelProto.upgrades,
+            getEnergyStorage: function(){ return this.data.energy_storage },
             getTransportSlots: panelProto.getTransportSlots,
             getTier: panelProto.getTier,
             canReceiveEnergy: panelProto.canReceiveEnergy,
