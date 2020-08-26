@@ -51,30 +51,20 @@ UpgradeAPI.registerUpgrade(ItemID.upgradeTrav, "trav", function(item, machine, c
             let tiles = [];
             let val = Math.min(data.output, data.energy);
             let nett = EnergyNetBuilder.getNetOnCoords(machine.x, machine.y, machine.z);
-            for(let key in nett.tileEntities){
-                if(tiles.length<5){
-                    tiles.push(nett.tileEntities[key]);
+            if(nett){
+                let ratio = EnergyTypeRegistry.getValueRatio(nett.energyType, "FE");
+                let add = Math.floor(val / tiles.length / ratio);
+                for(let key in nett.tileEntities){
+                    if(tiles.length<5){
+                        if(nett.tileEntities[key].canReceiveEnergy){
+                            tiles.push(nett.tileEntities[key]);
+                        }
+                    }
                 }
-            }
-            switch(nett.energyType){
-                case "Eu":
-                    for(let r in tiles){
-                        tiles[r].energyReceive("Eu", Math.floor(val/tiles.length/4), Math.floor(val/tiles.length/4));
-                        data.energy -= Math.floor(val/tiles.length);
-                    }
-                    break;
-                case "energyRF":
-                    for(let r in tiles){
-                        tiles[r].energyReceive("energyRF", Math.floor(val/tiles.length), Math.floor(val/tiles.length));
-                        data.energy -= Math.floor(val/tiles.length);
-                    }
-                    break;
-                case "FE":
-                    for(let r in tiles){
-                        tiles[r].energyReceive("FE", Math.floor(val/tiles.length), Math.floor(val/tiles.length));
-                        data.energy -= Math.floor(val/tiles.length);
-                    }
-                    break;
+                for(let t in tiles){
+                    tiles[t].energyReceive(nett.energyType, add, add);
+                    data.energy -= Math.floor(add * ratio);
+                }
             }
         }
     }
@@ -89,18 +79,8 @@ UpgradeAPI.registerUpgrade(ItemID.upgradeDisp, "disp", function(item, machine, c
                 let it = Player.getInventorySlot(s);
                 let dat = ChargeItemRegistry.getItemData(it.id);
                 if(dat){
-                    switch(dat.energy){
-                        case "Eu":
-                            data.energy -= ChargeItemRegistry.addEnergyTo(it, "Eu", data.energy, Math.min(Math.round(data.output, (ChargeItemRegistry.getItemData(it.id).maxCharge - ChargeItemRegistry.getEnergyStored(it)), data.energy)))*4;
-                            break;
-                        case "energyRF":
-                            data.energy -= ChargeItemRegistry.addEnergyTo(it, "energyRF", data.energy, Math.min(Math.round(data.output, (ChargeItemRegistry.getItemData(it.id).maxCharge - ChargeItemRegistry.getEnergyStored(it)), data.energy)));
-                            break;
-                        case "FE":
-                            data.energy -= ChargeItemRegistry.addEnergyTo(it, "FE", data.energy, Math.min(Math.round(data.output, (ChargeItemRegistry.getItemData(it.id).maxCharge - ChargeItemRegistry.getEnergyStored(it)), data.energy)));
-                            break;
-                    }
-                    break;
+                    let ratio = EnergyTypeRegistry.getValueRatio(dat.energy, "FE");
+                    data.energy -= ChargeItemRegistry.addEnergyTo(it, dat.energy, Math.floor(data.energy / ratio)) * ratio;
                 }
             }
         }
@@ -154,27 +134,13 @@ UpgradeAPI.registerUpgrade(ItemID.upgradeBchargeBound, "bcharge", function(item,
             }
         }
         if(blockIsInRange==true){
-            if(te.data.energy_storage){
-                if(te.canReceiveEnergy){
-                    if(te.__energyTypes){
-                        let value = Math.min(data.output, data.energy_storage, te.data.energy_storage, (te.data.energy_storage-te.data.energy), data.energy);
-                        switch(true){
-                            case te.__energyTypes["Eu"]:
-                                te.energyReceive("Eu", Math.floor(value/4), Math.floor(value/4));
-                                data.energy -= value;
-                                break;
-                            case te.__energyTypes["energyRF"]:
-                                te.energyReceive("energyRF", Math.floor(value), Math.floor(value));
-                                data.energy -= value;
-                                break;
-                            case te.__energyTypes["FE"]:
-                                te.energyReceive("FE", Math.floor(value), Math.floor(value));
-                                data.energy -= value;
-                                break;
-                        }
-                    }
-                }
-            } else item = {id: ItemID.upgradeBcharge, count: 1, data: 0}
-        } else item = {id: ItemID.upgradeBcharge, count: 1, data: 0}
+            if(te && te.canReceiveEnergy){
+                let val = Math.min(data.output, data.energy), 
+                type = Object.keys(te.__energyTypes)[0],
+                ratio = EnergyTypeRegistry.getValueRatio(type, "FE");
+                te.energyReceive(type, Math.floor(val / ratio), Math.floor(val / ratio));
+                data.energy -= val;
+            }
+        }
     }
 });
