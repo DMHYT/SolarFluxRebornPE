@@ -3,14 +3,6 @@
 
 const SolarConnector = {
     list: {},
-    getRelCoords: function(c){
-        return [
-            [c.x, c.y, c.z-1],//north
-            [c.x, c.y, c.z+1],//south
-            [c.x-1, c.y, c.z],//west
-            [c.x+1, c.y, c.z]//east
-        ];
-    },
     baseCube: function(model, tex){
         model.addBox(0, 0, 0, 1, 6/16, 1, [[tex[1], 0], [tex[0], 0], [tex[1], 0]]);
     },
@@ -22,9 +14,9 @@ const SolarConnector = {
         }
         render.addEntry(model);
     },
-    createModelsForPanel: function(id, textureTop, textureBase){
+    createModelsForPanel: function(ident, textureTop, textureBase){
         let tex = [textureTop, textureBase];
-        let idd = this.list[id] = {};
+        let idd = this.list[ident] = {};
         idd.renders = [];
         idd.models = [];
         for(let i=0; i<=15; i++){
@@ -99,99 +91,116 @@ const SolarConnector = {
         //connect ALL (x+1, x-1, z+1, z-1)
         this.baseCube(idd.models[15], tex);
     },
-    setConnectablePanel: function(id){
+    setConnectablePanel: function(id, ident){
         Block.setShape(id, 0, 0, 0, 1, 13/32, 1);
-        if(this.list[id]){
-            BlockRenderer.enableCoordMapping(id, -1, this.list[id].renders[0]);
+        if(this.list[ident]){
+            BlockRenderer.enableCoordMapping(id, -1, this.list[ident].renders[0]);
+            Block.registerPlaceFunction(id, function(coords, item){
+                World.setBlock(coords.relative.x, coords.relative.y, coords.relative.z, id, 0);
+                SolarConnector.update(coords.relative);
+            });
+            Block.registerNeighbourChangeFunction(id, function(coords, block, changedCoords){
+                if(World.getBlockID(changedCoords.x, changedCoords.x, changedCoords.z)==id){
+                    SolarConnector.update(coords);
+                }
+            });
         } else return Logger.Log("renders for panel not defined while calling 'SolarConnector.setConnectablePanel' method", "SolarFluxRebornAPI DEBUG ERROR");
-        Block.registerNeighbourChangeFunction(id, function(coords, block, changedCoords){
-            if(World.getBlockID(changedCoords.x, changedCoords.x, changedCoords.z)==id){
-                SolarConnector.update(coords);
-            }
-        });
     },
     update: function(c){ //coords
-        let val = 0, panels = 0, id = World.getBlockID(c.x, c.y, c.z), rel = this.getRelCoords(c);
-        for(let i in rel){
-            if(World.getBlockID(rel[i][0], rel[i][1], rel[i][2])==id){
+        let relCoords = [
+            [c.x, c.y, c.z-1],//north
+            [c.x, c.y, c.z+1],//south
+            [c.x-1, c.y, c.z],//west
+            [c.x+1, c.y, c.z]//east
+        ];
+        let val = '', panels = 0, iD = World.getBlockID(c.x, c.y, c.z);
+        for(let i in relCoords){
+            let x = relCoords[i][0], y = relCoords[i][1], z = relCoords[i][2];
+            if(World.getBlockID(x, y, z)==iD){
                 switch(i){
                     case 0:
-                        val += 1;
+                        val += '1';
+                        if(debugEnabled){ Debug.m("panel found north"); }
                         break;
                     case 1:
-                        val += 4;
+                        val += '2';
+                        if(debugEnabled){ Debug.m("panel found south"); }
                         break;
                     case 2:
-                        val += 9;
+                        val += '3';
+                        if(debugEnabled){ Debug.m("panel found west"); }
                         break;
                     case 3:
-                        val += 16;
+                        val += '4';
+                        if(debugEnabled){ Debug.m("panel found east"); }
                         break;
                 }
                 panels++;
             }
-        }
-        switch(panels){
-            case 0:
-                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[id].renders[0]);
-                break;
-            case 1:
-                switch(val){
+            if(debugEnabled){
+                switch(panels){
                     case 1:
-                        BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[id].renders[1]);
-                        break;
+                    case 2:
+                    case 3:
                     case 4:
-                        BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[id].renders[2]);
+                        Debug.m("panel checking was done successfully");
                         break;
-                    case 9:
-                        BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[id].renders[4]);
-                        break;
-                    case 16:
-                        BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[id].renders[3]);
-                        break;
+                    default:
+                        Debug.m("no panels near, or error!");
                 }
+            }
+        }
+        switch(val){
+            case '':
+                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[0]);
                 break;
-            case 2:
-                switch(val){
-                    case 17:
-                        BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[id].renders[5]);
-                        break;
-                    case 20:
-                        BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[id].renders[6]);
-                        break;
-                    case 13:
-                        BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[id].renders[7]);
-                        break;
-                    case 10:
-                        BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[id].renders[8]);
-                        break;
-                    case 5:
-                        BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[id].renders[9]);
-                        break;
-                    case 25:
-                        BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[id].renders[10]);
-                        break;
-                }
+            case '1':
+                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[1]);
                 break;
-            case 3:
-                switch(val){
-                    case 21:
-                        BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[id].renders[11]);
-                        break;
-                    case 29:
-                        BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[id].renders[12]);
-                        break;
-                    case 14:
-                        BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[id].renders[13]);
-                        break;
-                    case 26:
-                        BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[id].renders[14]);
-                        break;
-                }
+            case '2':
+                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[2]);
                 break;
-            case 4:
-                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[id].renders[15]);
+            case '3':
+                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[3]);
                 break;
+            case '4':
+                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[4]);
+                break;
+            case '14':
+                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[5]);
+                break;
+            case '24':
+                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[6]);
+                break;
+            case '23':
+                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[7]);
+                break;
+            case '13':
+                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[8]);
+                break;
+            case '12':
+                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[9]);
+                break;
+            case '34':
+                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[10]);
+                break;
+            case '124':
+                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[11]);
+                break;
+            case '234':
+                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[12]);
+                break;
+            case '123':
+                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[13]);
+                break;
+            case '134':
+                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[14]);
+                break;
+            case '1234':
+                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[15]);
+                break;
+            default:
+                if(debugEnabled) Debug.m("error with connecting panels!");
         }
     }
 }

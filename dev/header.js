@@ -11,6 +11,7 @@
 
 //© vstannumdum 2020
 //YouTube DMH (Russian)
+//YouTube vstannumdum (English)
 //My VK - https://www.vk.com/vstannumdum
 //Report bugs in VK Public - https://www.vk.com/dmhmods
 
@@ -28,3 +29,5 @@ const p = Player.get();
 Callback.addCallback("LevelLoaded", function(){
     Game.message("§4Solar§eFlux§1Reborn§aPE §l§6by vstannumdum 2020");
 });
+
+var debugEnabled = __config__.getBool("debug");

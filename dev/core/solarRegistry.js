@@ -72,7 +72,7 @@ const panelProto = {
         let net = EnergyNetBuilder.getNetOnCoords(this.x, this.y, this.z);
         if(net){
             let ratio = EnergyTypeRegistry.getValueRatio(net.energyType, "FE");
-            this.data.energy += src.add(output * ratio) - (output * ratio);
+            this.data.energy += (src.add(output / ratio) - (output / ratio)) * ratio;
         }
     }
 }
@@ -84,18 +84,18 @@ const SolarRegistry = {
     isPanel: function(id){
         return this.panelIDs[id];
     },
-    registerPanel: function(id, stats, header, textures){
+    registerPanel: function(id, ident, stats, header, textures){
         this.panelIDs[id] = true;
         ToolAPI.registerBlockMaterial(id, "stone", 1, true);
         Block.setDestroyTime(id, 20);
-        SolarConnector.createModelsForPanel(id, textures.top, textures.base);
-        SolarConnector.setConnectablePanel(id);
-        this.panelStats[id] = {
+        SolarConnector.createModelsForPanel(ident, textures.top, textures.base);
+        SolarConnector.setConnectablePanel(id, ident);
+        this.panelStats[ident] = {
             gen: stats.gen,
             output: stats.output,
             energy_storage: stats.energy_storage
         }
-        this.panelGUIs[id] = new UI.StandartWindow({
+        this.panelGUIs[ident] = new UI.StandartWindow({
             standart: {
                 header: {text: {text: header}},
                 inventory: {standart: true},
@@ -116,17 +116,18 @@ const SolarRegistry = {
             }
         });
         Callback.addCallback("LevelLoaded", function(){
-            SolarRegistry.updateGuiHeader(SolarRegistry.panelGUIs[id], header);
+            SolarRegistry.updateGuiHeader(SolarRegistry.panelGUIs[ident], header);
         });
         TileEntity.registerPrototype(id, {
             defaultValues: {
-                gen: SolarRegistry.panelStats[id].gen,
-                output: SolarRegistry.panelStats[id].output,
-                energy_storage: SolarRegistry.panelStats[id].energy_storage,
+                gen: SolarRegistry.panelStats[ident].gen,
+                output: SolarRegistry.panelStats[ident].output,
+                energy_storage: SolarRegistry.panelStats[ident].energy_storage,
                 canSeeSky: false,
                 energy: 0,
                 isActive: false
             },
+            getGuiScreen: function(){ return this.panelGUIs[ident]; },
             upgrades: panelProto.upgrades,
             getEnergyStorage: function(){ return this.data.energy_storage },
             getTransportSlots: panelProto.getTransportSlots,
