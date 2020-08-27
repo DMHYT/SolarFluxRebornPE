@@ -25,9 +25,3 @@ SolarRegistry.registerPanel(BlockID.panel5, "panel5", {gen: 512, output: 4096, e
 SolarRegistry.registerPanel(BlockID.panel6, "panel6", {gen: 2048, output: 16384, energy_storage: 3.2e7}, Translation.translate("Solar panel VI"), {top: "panel6_top", base: "panel6_base"});
 SolarRegistry.registerPanel(BlockID.panel7, "panel7", {gen: 8192, output: 6.4e4, energy_storage: 6.4e7}, Translation.translate("Solar panel VII"), {top: "panel7_top", base: "panel7_base"});
 SolarRegistry.registerPanel(BlockID.panel8, "panel8", {gen: 32768, output: 2.56e5, energy_storage: 1.28e8}, Translation.translate("Solar panel VIII"), {top: "panel8_top", base: "panel8_base"});
-
-Callback.addCallback("BuildBlock", function(coords, block, player){
-    if(SolarRegistry.isPanel(block.id)){
-        SolarConnector.update(coords.relative);
-    }
-});

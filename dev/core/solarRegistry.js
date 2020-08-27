@@ -24,7 +24,7 @@ const panelProto = {
     destroy: function(){ BlockRenderer.unmapAtCoords(this.x, this.y, this.z); },
     init: function(){
         this.data.canSeeSky = GenerationUtils.canSeeSky(this.x, this.y + 1, this.z);
-        SolarConnector.update(this);
+        SolarConnector.update(this, SolarRegistry.getIdentifierByPanel(World.getBlockID(this.x, this.y, this.z)));
     },
     resetValues: function(){
         this.data.gen = this.defaultValues.gen;
@@ -58,6 +58,7 @@ const panelProto = {
         }
         this.container.setScale("energyBarScale", this.data.energy / this.getEnergyStorage());
         this.container.setText("textStored", Translation.translate("Stored")+": "+this.data.energy+" FE");
+        this.container.setText("textCap", Translation.translate("Capacity")+": "+Math.round(this.data.energy_storage)+" FE");
     },
     defaultEnergyTick: function(){
         var output = Math.min(this.data.output, this.data.energy);
@@ -82,10 +83,15 @@ const SolarRegistry = {
     panelGUIs: {},
     panelStats: {},
     isPanel: function(id){
-        return this.panelIDs[id];
+        return this.panelIDs[id] && this.panelIDs[id].exists;
+    },
+    getIdentifierByPanel: function(id){
+        if(this.isPanel(id)) return this.panelIDs[id].ident;
     },
     registerPanel: function(id, ident, stats, header, textures){
-        this.panelIDs[id] = true;
+        this.panelIDs[id] = {};
+        this.panelIDs[id].exists = true;
+        this.panelIDs[id].ident = ident;
         ToolAPI.registerBlockMaterial(id, "stone", 1, true);
         Block.setDestroyTime(id, 20);
         SolarConnector.createModelsForPanel(ident, textures.top, textures.base);
@@ -105,7 +111,7 @@ const SolarRegistry = {
             elements: {
                 "energyBarScale": {type: "scale", x: 800, y: 100, direction: 1, value: 0.5, bitmap: "energy_bar_scale", scale: GUI_SCALE},
                 "textStored": {type: "text", x: 350, y: 100, width: 300, height: 30, text: Translation.translate("Stored")+": 0 FE"},   
-                "textCap": {type: "text", x: 350, y: 130, width: 300, height: 30, text: Translation.translate("Capacity")+": "+Math.round(this.panelStats[id].energy_storage)+" FE"},
+                "textCap": {type: "text", x: 350, y: 130, width: 300, height: 30, text: Translation.translate("Capacity")+": "+Math.round(this.panelStats[ident].energy_storage)+" FE"},
                 "textGen": {type: "text", x: 350, y: 160, width: 300, height: 30, text: Translation.translate("Generation")+": 0 FE/"+Translation.translate("tick")},
                 "slotUpgrade1": {type: "slot", x: 350, y: 270, isValid: UpgradeAPI.isValidUpgrade},
                 "slotUpgrade2": {type: "slot", x: 414, y: 270, isValid: UpgradeAPI.isValidUpgrade},
@@ -127,7 +133,7 @@ const SolarRegistry = {
                 energy: 0,
                 isActive: false
             },
-            getGuiScreen: function(){ return this.panelGUIs[ident]; },
+            getGuiScreen: function(){ return SolarRegistry.panelGUIs[ident]; },
             upgrades: panelProto.upgrades,
             getEnergyStorage: function(){ return this.data.energy_storage },
             getTransportSlots: panelProto.getTransportSlots,

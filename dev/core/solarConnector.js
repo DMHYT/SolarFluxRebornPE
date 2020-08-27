@@ -97,57 +97,50 @@ const SolarConnector = {
             BlockRenderer.enableCoordMapping(id, -1, this.list[ident].renders[0]);
             Block.registerPlaceFunction(id, function(coords, item){
                 World.setBlock(coords.relative.x, coords.relative.y, coords.relative.z, id, 0);
-                SolarConnector.update(coords.relative);
+                World.addTileEntity(coords.relative.x, coords.relative.y, coords.relative.z);
+                SolarConnector.update(coords.relative, ident);
             });
             Block.registerNeighbourChangeFunction(id, function(coords, block, changedCoords){
-                if(World.getBlockID(changedCoords.x, changedCoords.x, changedCoords.z)==id){
-                    SolarConnector.update(coords);
+                if(changedCoords.y<coords.y||changedCoords.y>coords.y){
+                    if(World.getBlockID(changedCoords.x, changedCoords.x, changedCoords.z)==id){
+                        SolarConnector.update(coords, ident);
+                    }
                 }
             });
         } else return Logger.Log("renders for panel not defined while calling 'SolarConnector.setConnectablePanel' method", "SolarFluxRebornAPI DEBUG ERROR");
     },
-    update: function(c){ //coords
-        let relCoords = [
-            [c.x, c.y, c.z-1],//north
-            [c.x, c.y, c.z+1],//south
-            [c.x-1, c.y, c.z],//west
-            [c.x+1, c.y, c.z]//east
-        ];
+    update: function(c, ident){
         let val = '', panels = 0, iD = World.getBlockID(c.x, c.y, c.z);
-        for(let i in relCoords){
-            let x = relCoords[i][0], y = relCoords[i][1], z = relCoords[i][2];
-            if(World.getBlockID(x, y, z)==iD){
-                switch(i){
-                    case 0:
-                        val += '1';
-                        if(debugEnabled){ Debug.m("panel found north"); }
-                        break;
-                    case 1:
-                        val += '2';
-                        if(debugEnabled){ Debug.m("panel found south"); }
-                        break;
-                    case 2:
-                        val += '3';
-                        if(debugEnabled){ Debug.m("panel found west"); }
-                        break;
-                    case 3:
-                        val += '4';
-                        if(debugEnabled){ Debug.m("panel found east"); }
-                        break;
-                }
-                panels++;
-            }
-            if(debugEnabled){
-                switch(panels){
-                    case 1:
-                    case 2:
-                    case 3:
-                    case 4:
-                        Debug.m("panel checking was done successfully");
-                        break;
-                    default:
-                        Debug.m("no panels near, or error!");
-                }
+        if(World.getBlockID(c.x, c.y, c.z-1)==iD){
+            val += '1';
+            if(debugEnabled){ Debug.m("panel found north"); }
+            panels++;
+        }
+        if(World.getBlockID(c.x, c.y, c.z+1)==iD){
+            val += '2';
+            if(debugEnabled){ Debug.m("panel found south"); }
+            panels++;
+        }
+        if(World.getBlockID(c.x-1, c.y, c.z)==iD){
+            val += '3';
+            if(debugEnabled){ Debug.m("panel found west"); }
+            panels++;
+        }
+        if(World.getBlockID(c.x+1, c.y, c.z)==iD){
+            val += '4';
+            if(debugEnabled){ Debug.m("panel found east"); }
+            panels++;
+        }
+        if(debugEnabled){
+            switch(panels){
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                    Debug.m("panel checking was done successfully");
+                    break;
+                default:
+                    Debug.m("no panels near, or error!");
             }
         }
         switch(val){
@@ -200,7 +193,10 @@ const SolarConnector = {
                 BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[15]);
                 break;
             default:
-                if(debugEnabled) Debug.m("error with connecting panels!");
+                if(debugEnabled){ 
+                    Debug.m("error with connecting panels!"); 
+                    Debug.m("val: "+val);
+                }
         }
     }
 }
