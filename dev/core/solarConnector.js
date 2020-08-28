@@ -90,6 +90,7 @@ const SolarConnector = {
         //------------------------------
         //connect ALL (x+1, x-1, z+1, z-1)
         this.baseCube(idd.models[15], tex);
+        idd.renders[15].addEntry(idd.models[15]);
     },
     setConnectablePanel: function(id, ident){
         Block.setShape(id, 0, 0, 0, 1, 13/32, 1);
@@ -137,10 +138,10 @@ const SolarConnector = {
                 case 2:
                 case 3:
                 case 4:
-                    Debug.m("panel checking was done successfully");
+                    Debug.m("panel checking was done successfully, panels: "+panels);
                     break;
                 default:
-                    Debug.m("no panels near, or error!");
+                    Debug.m("panels: "+panels);
             }
         }
         switch(val){
@@ -148,28 +149,28 @@ const SolarConnector = {
                 BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[0]);
                 break;
             case '1':
-                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[1]);
-                break;
-            case '2':
                 BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[2]);
                 break;
-            case '3':
-                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[3]);
+            case '2':
+                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[1]);
                 break;
-            case '4':
+            case '3':
                 BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[4]);
                 break;
+            case '4':
+                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[3]);
+                break;
             case '14':
-                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[5]);
-                break;
-            case '24':
-                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[6]);
-                break;
-            case '23':
                 BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[7]);
                 break;
-            case '13':
+            case '24':
                 BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[8]);
+                break;
+            case '23':
+                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[5]);
+                break;
+            case '13':
+                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[6]);
                 break;
             case '12':
                 BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[9]);
@@ -178,16 +179,16 @@ const SolarConnector = {
                 BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[10]);
                 break;
             case '124':
-                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[11]);
-                break;
-            case '234':
-                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[12]);
-                break;
-            case '123':
                 BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[13]);
                 break;
-            case '134':
+            case '234':
                 BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[14]);
+                break;
+            case '123':
+                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[11]);
+                break;
+            case '134':
+                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[12]);
                 break;
             case '1234':
                 BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[15]);
@@ -198,5 +199,6 @@ const SolarConnector = {
                     Debug.m("val: "+val);
                 }
         }
+        if(debugEnabled) Debug.m("val: "+val);
     }
 }

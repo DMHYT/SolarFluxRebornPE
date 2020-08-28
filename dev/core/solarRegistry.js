@@ -22,9 +22,20 @@ const panelProto = {
     activate: function(){ this.setActive(true); },
     deactivate: function(){ this.setActive(false); },
     destroy: function(){ BlockRenderer.unmapAtCoords(this.x, this.y, this.z); },
-    init: function(){
-        this.data.canSeeSky = GenerationUtils.canSeeSky(this.x, this.y + 1, this.z);
-        SolarConnector.update(this, SolarRegistry.getIdentifierByPanel(World.getBlockID(this.x, this.y, this.z)));
+    connect: function(){
+        let dirs = [
+            EnergyNetBuilder.getRelativeCoords(this.x, this.y, this.z, 0),
+            EnergyNetBuilder.getRelativeCoords(this.x, this.y, this.z, 2),
+            EnergyNetBuilder.getRelativeCoords(this.x, this.y, this.z, 3),
+            EnergyNetBuilder.getRelativeCoords(this.x, this.y, this.z, 4),
+            EnergyNetBuilder.getRelativeCoords(this.x, this.y, this.z, 5)
+        ]
+        for(let i in dirs){
+            let d = dirs[i], net = EnergyNetBuilder.getNetOnCoords(d.x, d.y, d.z);
+            if(net){
+                net.addTileEntity(this);
+            }
+        }
     },
     resetValues: function(){
         this.data.gen = this.defaultValues.gen;
@@ -109,7 +120,7 @@ const SolarRegistry = {
             },
             drawing: [{type: "bitmap", x: 720, y: 100, bitmap: "energy_bar_background", scale: GUI_SCALE}],
             elements: {
-                "energyBarScale": {type: "scale", x: 800, y: 100, direction: 1, value: 0.5, bitmap: "energy_bar_scale", scale: GUI_SCALE},
+                "energyBarScale": {type: "scale", x: 720, y: 100, direction: 1, value: 0.5, bitmap: "energy_bar_scale", scale: GUI_SCALE},
                 "textStored": {type: "text", x: 350, y: 100, width: 300, height: 30, text: Translation.translate("Stored")+": 0 FE"},   
                 "textCap": {type: "text", x: 350, y: 130, width: 300, height: 30, text: Translation.translate("Capacity")+": "+Math.round(this.panelStats[ident].energy_storage)+" FE"},
                 "textGen": {type: "text", x: 350, y: 160, width: 300, height: 30, text: Translation.translate("Generation")+": 0 FE/"+Translation.translate("tick")},
@@ -118,7 +129,7 @@ const SolarRegistry = {
                 "slotUpgrade3": {type: "slot", x: 480, y: 270, isValid: UpgradeAPI.isValidUpgrade},
                 "slotUpgrade4": {type: "slot", x: 544, y: 270, isValid: UpgradeAPI.isValidUpgrade}, 
                 "slotUpgrade5": {type: "slot", x: 610, y: 270, isValid: UpgradeAPI.isValidUpgrade},
-                "slotCharge1": {type: "slot", x: 820, y: 100, bitmap: "charge_slot", isValid: function(id){return ChargeItemRegistry.getItemData(id)}},
+                "slotCharge1": {type: "slot", x: 820, y: 100, bitmap: "charge_slot", isValid: function(id){return true;}},
             }
         });
         Callback.addCallback("LevelLoaded", function(){
@@ -145,7 +156,12 @@ const SolarRegistry = {
             activate: panelProto.activate,
             deactivate: panelProto.deactivate,
             destroy: panelProto.destroy,
-            init: panelProto.init,
+            connectToNearestNet: panelProto.connectToNearestNet,
+            init: function(){
+                this.data.canSeeSky = GenerationUtils.canSeeSky(this.x, this.y + 1, this.z);
+                SolarConnector.update(this, ident);
+                this.connect();
+            },
             resetValues: panelProto.resetValues,
             getItemEnergyType: panelProto.getItemEnergyType,
             tick: panelProto.tick,
@@ -160,7 +176,7 @@ const SolarRegistry = {
                 "slotCharge1": {input: true}  
             },
             isValidInput: function(id){
-                return ChargeItemRegistry.getItemData(id);
+                return true;
             }
         });
     },
