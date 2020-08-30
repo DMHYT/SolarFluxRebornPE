@@ -102,7 +102,7 @@ const SolarConnector = {
                 SolarConnector.update(coords.relative, ident);
             });
             Block.registerNeighbourChangeFunction(id, function(coords, block, changedCoords){
-                if(changedCoords.y<coords.y||changedCoords.y>coords.y){
+                if(changedCoords.y==coords.y){
                     if(World.getBlockID(changedCoords.x, changedCoords.x, changedCoords.z)==id){
                         SolarConnector.update(coords, ident);
                     }
@@ -149,10 +149,10 @@ const SolarConnector = {
                 BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[0]);
                 break;
             case '1':
-                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[2]);
+                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[1]);
                 break;
             case '2':
-                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[1]);
+                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[2]);
                 break;
             case '3':
                 BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[4]);
@@ -161,16 +161,16 @@ const SolarConnector = {
                 BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[3]);
                 break;
             case '14':
-                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[7]);
-                break;
-            case '24':
-                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[8]);
-                break;
-            case '23':
                 BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[5]);
                 break;
-            case '13':
+            case '24':
                 BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[6]);
+                break;
+            case '23':
+                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[7]);
+                break;
+            case '13':
+                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[8]);
                 break;
             case '12':
                 BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[9]);
@@ -179,16 +179,16 @@ const SolarConnector = {
                 BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[10]);
                 break;
             case '124':
-                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[13]);
-                break;
-            case '234':
-                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[14]);
-                break;
-            case '123':
                 BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[11]);
                 break;
-            case '134':
+            case '234':
                 BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[12]);
+                break;
+            case '123':
+                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[13]);
+                break;
+            case '134':
+                BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[14]);
                 break;
             case '1234':
                 BlockRenderer.mapAtCoords(c.x, c.y, c.z, this.list[ident].renders[15]);

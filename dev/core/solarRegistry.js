@@ -44,7 +44,6 @@ const panelProto = {
         this.energyTick = this.defaultEnergyTick;
     },
     getItemEnergyType: function(){
-        if(ChargeItemRegistry.chargeData[this.container.getSlot("slotCharge1").id])
         return ChargeItemRegistry.chargeData[this.container.getSlot("slotCharge1").id].energy;
     },
     tick: function(){
@@ -62,7 +61,6 @@ const panelProto = {
         } else {
             this.container.setText("textGen", Translation.translate("Generation")+" FE/"+Translation.translate("tick"));
         }
-        let chSlot = this.container.getSlot("slotCharge1");
         if(chSlot.id!==0){
             let ratio = EnergyTypeRegistry.getValueRatio(this.getItemEnergyType(), "FE");
             this.data.energy -= ChargeItemRegistry.addEnergyTo(chSlot, this.getItemEnergyType(), Math.floor(this.data.energy / ratio)) * ratio;
@@ -156,7 +154,7 @@ const SolarRegistry = {
             activate: panelProto.activate,
             deactivate: panelProto.deactivate,
             destroy: panelProto.destroy,
-            connectToNearestNet: panelProto.connectToNearestNet,
+            connect: panelProto.connect,
             init: function(){
                 this.data.canSeeSky = GenerationUtils.canSeeSky(this.x, this.y + 1, this.z);
                 SolarConnector.update(this, ident);
