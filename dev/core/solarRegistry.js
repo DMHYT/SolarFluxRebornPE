@@ -22,21 +22,6 @@ const panelProto = {
     activate: function(){ this.setActive(true); },
     deactivate: function(){ this.setActive(false); },
     destroy: function(){ BlockRenderer.unmapAtCoords(this.x, this.y, this.z); },
-    connect: function(){
-        let dirs = [
-            EnergyNetBuilder.getRelativeCoords(this.x, this.y, this.z, 0),
-            EnergyNetBuilder.getRelativeCoords(this.x, this.y, this.z, 2),
-            EnergyNetBuilder.getRelativeCoords(this.x, this.y, this.z, 3),
-            EnergyNetBuilder.getRelativeCoords(this.x, this.y, this.z, 4),
-            EnergyNetBuilder.getRelativeCoords(this.x, this.y, this.z, 5)
-        ]
-        for(let i in dirs){
-            let d = dirs[i], net = EnergyNetBuilder.getNetOnCoords(d.x, d.y, d.z);
-            if(net){
-                net.addTileEntity(this);
-            }
-        }
-    },
     resetValues: function(){
         this.data.gen = this.defaultValues.gen;
         this.data.output = this.defaultValues.output;
@@ -71,19 +56,13 @@ const panelProto = {
     },
     defaultEnergyTick: function(){
         var output = Math.min(this.data.output, this.data.energy);
-        let net = EnergyNetBuilder.getNetOnCoords(this.x, this.y, this.z);
-        if(net){
-            let ratio = EnergyTypeRegistry.getValueRatio(net.energyType, "FE");
-            this.data.energy += src.add(output * ratio) - (output * ratio);
-        }
+        let ratio = EnergyTypeRegistry.getValueRatio(EnergyNetBuilder.getNetOnCoords(this.x, this.y, this.z), "FE");
+        this.data.energy += src.add(output * ratio) - (output * ratio);
     },
     energyTick: function(){
         var output = Math.min(this.data.output, this.data.energy);
-        let net = EnergyNetBuilder.getNetOnCoords(this.x, this.y, this.z);
-        if(net){
-            let ratio = EnergyTypeRegistry.getValueRatio(net.energyType, "FE");
-            this.data.energy += (src.add(output / ratio) - (output / ratio)) * ratio;
-        }
+        let ratio = EnergyTypeRegistry.getValueRatio(EnergyNetBuilder.getNetOnCoords(this.x, this.y, this.z), "FE");
+        this.data.energy += src.add(output * ratio) - (output * ratio);
     }
 }
 
@@ -127,7 +106,7 @@ const SolarRegistry = {
                 "slotUpgrade3": {type: "slot", x: 480, y: 270, isValid: UpgradeAPI.isValidUpgrade},
                 "slotUpgrade4": {type: "slot", x: 544, y: 270, isValid: UpgradeAPI.isValidUpgrade}, 
                 "slotUpgrade5": {type: "slot", x: 610, y: 270, isValid: UpgradeAPI.isValidUpgrade},
-                "slotCharge1": {type: "slot", x: 820, y: 100, bitmap: "charge_slot", isValid: function(id){return true;}},
+                "slotCharge1": {type: "slot", x: 820, y: 100, bitmap: "charge_slot", isValid: validChargeItem},
             }
         });
         Callback.addCallback("LevelLoaded", function(){
@@ -166,16 +145,16 @@ const SolarRegistry = {
             defaultEnergyTick: panelProto.defaultEnergyTick,
             energyTick: panelProto.energyTick
         });
-        for(let e in energyTypes){
-            EnergyTileRegistry.addEnergyTypeForId(id, energyTypes[e]);
-        }
+        EnergyTileRegistry.addEnergyTypeForId(id, FE);
+        EnergyTileRegistry.addEnergyTypeForId(id, EU);
+        EnergyTileRegistry.addEnergyTypeForId(id, RF);
+        EnergyTileRegistry.addEnergyTypeForId(id, BT);
+        EnergyTileRegistry.addEnergyTypeForId(id, QE);
         StorageInterface.createInterface(id, {
             slots: {
                 "slotCharge1": {input: true}  
             },
-            isValidInput: function(id){
-                return true;
-            }
+            isValidInput: validChargeItem
         });
     },
     setActive: function(isActive){

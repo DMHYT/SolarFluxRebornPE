@@ -100,12 +100,12 @@ const SolarConnector = {
                 World.setBlock(coords.relative.x, coords.relative.y, coords.relative.z, id, 0);
                 World.addTileEntity(coords.relative.x, coords.relative.y, coords.relative.z);
                 SolarConnector.update(coords.relative, ident);
-            });
-            Block.registerNeighbourChangeFunction(id, function(coords, block, changedCoords){
-                if(changedCoords.y==coords.y){
-                    if(World.getBlockID(changedCoords.x, changedCoords.x, changedCoords.z)==id){
-                        SolarConnector.update(coords, ident);
-                    }
+                for(let i in getNeighbours(coords.relative)){
+                    let c = getNeighbours(coords.relative)[i];
+                    if(World.getBlockID(c.x, c.y, c.z)==item.id){
+                        SolarConnector.update(c, ident);
+                        if(debugEnabled) Debug.m("panel detected near, connection was successfull");
+                    } else if(debugEnabled) Debug.m("panel not found near");
                 }
             });
         } else return Logger.Log("renders for panel not defined while calling 'SolarConnector.setConnectablePanel' method", "SolarFluxRebornAPI DEBUG ERROR");

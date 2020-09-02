@@ -21,9 +21,11 @@ IMPORT("StorageInterface");
 
 const GUI_SCALE = 3.2;
 const EU = EnergyTypeRegistry.assureEnergyType("Eu", 1);
-const RF = EnergyTypeRegistry.assureEnergyType("energyRF", 1/4);
-const FE = EnergyTypeRegistry.assureEnergyType("FE", 1/4);
-const energyTypes = [EU, RF, FE];
+const RF = EnergyTypeRegistry.assureEnergyType("RF", 0.25);
+const FE = EnergyTypeRegistry.assureEnergyType("FE", 0.25);
+const BT = EnergyTypeRegistry.assureEnergyType("BU", 0.25);
+const QE = EnergyTypeRegistry.assureEnergyType("QE", 1);
+const energyTypes = [FE, EU, RF, BT, QE];
 const p = Player.get();
 
 Callback.addCallback("LevelLoaded", function(){
@@ -31,3 +33,20 @@ Callback.addCallback("LevelLoaded", function(){
 });
 
 var debugEnabled = __config__.getBool("debug");
+
+function validChargeItem(id){
+    return ChargeItemRegistry.isValidItem(id, "Eu", 1) ||
+    ChargeItemRegistry.isValidItem(id, "RF", 1) ||
+    ChargeItemRegistry.isValidItem(id, "FE", 1) ||
+    ChargeItemRegistry.isValidItem(id, "BT", 1) ||
+    ChargeItemRegistry.isValidItem(id, "QE", 1);
+}
+
+function getNeighbours(coords){
+    return [
+        {x: coords.x+1, y: coords.y, z: coords.z},
+        {x: coords.x-1, y: coords.y, z: coords.z},
+        {x: coords.x, y: coords.y, z: coords.z+1},
+        {x: coords.x, y: coords.y, z: coords.z-1}
+    ];
+}

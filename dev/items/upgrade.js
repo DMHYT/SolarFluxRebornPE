@@ -73,7 +73,7 @@ UpgradeAPI.registerUpgrade(ItemID.upgradeTrav, "trav", function(item, machine, c
 UpgradeAPI.registerUpgrade(ItemID.upgradeDisp, "disp", function(item, machine, container, data){
     if(data.gen){
         let pos = Player.getPosition();
-        let distance = Entity.getDistanceToCoords(pos, this);
+        let distance = Entity.getDistanceBetweenCoords(pos, this);
         if(distance<=5){
             for(let s=0; s<=35; s++){
                 let it = Player.getInventorySlot(s);
@@ -98,7 +98,7 @@ Item.setGlint(ItemID.upgradeBchargeBound, true);
 
 Callback.addCallback("ItemUse", function(coords, item, block){
     if(item.id==ItemID.upgradeBcharge&&Entity.getSneaking(p)){
-        if(World.getTileEntity(coords.x, coords.y, coords.z).data.energy_storage){
+        if(World.getTileEntity(coords.x, coords.y, coords.z).canReceiveEnergy){
             var extra = item.extra;
             if(!extra) extra = new ItemExtraData();
             extra.putInt("x", coords.x);
