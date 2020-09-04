@@ -108,6 +108,17 @@ const SolarConnector = {
                     } else if(debugEnabled) Debug.m("panel not found near");
                 }
             });
+            Callback.addCallback("DestroyBlock", function(coords, block, player){
+                if(block.id==id){
+                    for(let i in getNeighbours(coords)){
+                        let c = getNeighbours(coords)[i];
+                        if(World.getBlockID(c.x, c.y, c.z)==block.id){
+                            SolarConnector.update(c, ident);
+                            if(debugEnabled) Debug.m("panel detected near, connection was successfull");
+                        } else if(debugEnabled) Debug.m("panel not found near");
+                    }
+                }
+            });
         } else return Logger.Log("renders for panel not defined while calling 'SolarConnector.setConnectablePanel' method", "SolarFluxRebornAPI DEBUG ERROR");
     },
     update: function(c, ident){
