@@ -26,7 +26,7 @@ const panelProto = {
         this.data.gen = this.defaultValues.gen;
         this.data.output = this.defaultValues.output;
         this.data.energy_storage = this.defaultValues.energy_storage;
-        this.energyTick = this.defaultEnergyTick;
+        this.data.traversal = this.defaultValues.traversal;
     },
     getItemEnergyType: function(){
         return ChargeItemRegistry.chargeData[this.container.getSlot("slotCharge1").id].energy;
@@ -34,6 +34,7 @@ const panelProto = {
     tick: function(){
         this.resetValues();
         UpgradeAPI.executeUpgrades(this);
+        let chSlot = this.container.getSlot("slotCharge1");
         if(World.getThreadTime()%100 == 0){
             this.data.canSeeSky = GenerationUtils.canSeeSky(this.x, this.y + 1, this.z);
         }
@@ -53,16 +54,19 @@ const panelProto = {
         this.container.setScale("energyBarScale", this.data.energy / this.getEnergyStorage());
         this.container.setText("textStored", Translation.translate("Stored")+": "+this.data.energy+" FE");
         this.container.setText("textCap", Translation.translate("Capacity")+": "+Math.round(this.data.energy_storage)+" FE");
+        if(this.data.traversal) this.energyTick = this.defaultEnergyTick;
     },
-    defaultEnergyTick: function(){
+    defaultEnergyTick: function(type, src){
         var output = Math.min(this.data.output, this.data.energy);
         let ratio = EnergyTypeRegistry.getValueRatio(EnergyNetBuilder.getNetOnCoords(this.x, this.y, this.z), "FE");
-        this.data.energy += src.add(output * ratio) - (output * ratio);
+        this.data.energy -= output * ratio;
+        this.data.energy += src.add(output * ratio);
     },
-    energyTick: function(){
+    energyTick: function(type, src){
         var output = Math.min(this.data.output, this.data.energy);
         let ratio = EnergyTypeRegistry.getValueRatio(EnergyNetBuilder.getNetOnCoords(this.x, this.y, this.z), "FE");
-        this.data.energy += src.add(output * ratio) - (output * ratio);
+        this.data.energy -= output * ratio;
+        this.data.energy += src.add(output * ratio);
     }
 }
 
@@ -109,9 +113,6 @@ const SolarRegistry = {
                 "slotCharge1": {type: "slot", x: 820, y: 100, bitmap: "charge_slot", isValid: validChargeItem},
             }
         });
-        Callback.addCallback("LevelLoaded", function(){
-            SolarRegistry.updateGuiHeader(SolarRegistry.panelGUIs[ident], header);
-        });
         TileEntity.registerPrototype(id, {
             defaultValues: {
                 gen: SolarRegistry.panelStats[ident].gen,
@@ -119,7 +120,8 @@ const SolarRegistry = {
                 energy_storage: SolarRegistry.panelStats[ident].energy_storage,
                 canSeeSky: false,
                 energy: 0,
-                isActive: false
+                isActive: false,
+                traversal: false
             },
             getGuiScreen: function(){ return SolarRegistry.panelGUIs[ident]; },
             upgrades: panelProto.upgrades,
@@ -133,11 +135,9 @@ const SolarRegistry = {
             activate: panelProto.activate,
             deactivate: panelProto.deactivate,
             destroy: panelProto.destroy,
-            connect: panelProto.connect,
             init: function(){
                 this.data.canSeeSky = GenerationUtils.canSeeSky(this.x, this.y + 1, this.z);
                 SolarConnector.update(this, ident);
-                this.connect();
             },
             resetValues: panelProto.resetValues,
             getItemEnergyType: panelProto.getItemEnergyType,
@@ -145,6 +145,8 @@ const SolarRegistry = {
             defaultEnergyTick: panelProto.defaultEnergyTick,
             energyTick: panelProto.energyTick
         });
+        ICRender.getGroup("ic-wire").add(id, -1);
+        ICRender.getGroup("rf-wire").add(id, -1);
         EnergyTileRegistry.addEnergyTypeForId(id, FE);
         EnergyTileRegistry.addEnergyTypeForId(id, EU);
         EnergyTileRegistry.addEnergyTypeForId(id, RF);
@@ -161,9 +163,5 @@ const SolarRegistry = {
 		if(this.data.isActive != isActive){
 			this.data.isActive = isActive;
 		}
-	},
-    updateGuiHeader: function(gui, text){
-        var header = gui.getWindow("header");
-        header.contentProvider.drawing[1].text = Translation.translate(text);
-    }
+	}
 };

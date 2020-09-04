@@ -53,7 +53,6 @@ UpgradeAPI.registerUpgrade(ItemID.upgradeTrav, "trav", function(item, machine, c
             let nett = EnergyNetBuilder.getNetOnCoords(machine.x, machine.y, machine.z);
             if(nett){
                 let ratio = EnergyTypeRegistry.getValueRatio(nett.energyType, "FE");
-                let add = Math.floor(val / tiles.length / ratio);
                 for(let key in nett.tileEntities){
                     if(tiles.length<5){
                         if(nett.tileEntities[key].canReceiveEnergy){
@@ -61,12 +60,14 @@ UpgradeAPI.registerUpgrade(ItemID.upgradeTrav, "trav", function(item, machine, c
                         }
                     }
                 }
+                let add = Math.floor(val / tiles.length / ratio);
                 for(let t in tiles){
                     tiles[t].energyReceive(nett.energyType, add, add);
                     data.energy -= Math.floor(add * ratio);
                 }
             }
         }
+        data.traversal = true;
     }
 });
 

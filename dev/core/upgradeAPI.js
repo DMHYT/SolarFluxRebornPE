@@ -63,4 +63,17 @@ var UpgradeAPI = {
         }
         StorageInterface.checkHoppers(machine);
     },
+
+    //my func
+    findUpgrade: function(container, id){
+        for(let i in container.slots){
+            let slot = container.slots[i];
+            if(slot.startsWith("slotUpgrade")){
+                if(slot.id==id){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }
