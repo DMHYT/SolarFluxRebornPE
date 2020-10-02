@@ -30,6 +30,7 @@ UpgradeAPI.registerUpgrade(ItemID.upgradeFurn, "furn", function(item, machine, c
     if(data.gen){
         let block = World.getBlockID(machine.x, machine.y-1, machine.z);
         let cont = World.getContainer(machine.x, machine.y-1, machine.z);
+        let consume = EnergyNetBuilder.getNetOnCoords(machine.x, machine.y, machine.z).energyName == "Eu" ? 25 : 100;
         if(cont){
             if(block==61){
                 let srcSlot = cont.getSlot(0);
@@ -37,7 +38,7 @@ UpgradeAPI.registerUpgrade(ItemID.upgradeFurn, "furn", function(item, machine, c
                 if(srcSlot.id!=0&&fuelSlot.id==0){
                     if(data.energy>=100){
                         cont.setSlot(1, 5, 1, 0);
-                        data.energy -= 100;
+                        data.energy -= consume;
                     }
                 }
             }
@@ -48,22 +49,22 @@ UpgradeAPI.registerUpgrade(ItemID.upgradeFurn, "furn", function(item, machine, c
 UpgradeAPI.registerUpgrade(ItemID.upgradeTrav, "trav", function(item, machine, container, data){
     if(data.gen){
         machine.energyTick = function(){
-            let tiles = [];
-            let val = Math.min(data.output, data.energy);
-            let nett = EnergyNetBuilder.getNetOnCoords(machine.x, machine.y, machine.z);
-            if(nett){
-                let ratio = EnergyTypeRegistry.getValueRatio(nett.energyType, "FE");
-                for(let key in nett.tileEntities){
-                    if(tiles.length<5){
-                        if(nett.tileEntities[key].canReceiveEnergy){
-                            tiles.push(nett.tileEntities[key]);
+            let tiles = [], 
+                val = Math.min(data.output * data.updateTimer, data.energy),
+                net = EnergyNetBuilder.getNetOnCoords(machine.x, machine.y, machine.z),
+                type = net.energyName;
+            if(net){
+                for(let key in net.tileEntities){
+                    if(tiles.length < 5){
+                        if(nett.tileEntities[key].canReceiveEnergy()){
+                            tiles.push(net.tileEntities[key]);
                         }
                     }
                 }
-                let add = Math.floor(val / tiles.length / ratio);
+                let add = type == "Eu" ? Math.min(Math.floor(val / tiles.length), 8192) : Math.floor(val / tiles.length);
                 for(let t in tiles){
-                    tiles[t].energyReceive(nett.energyType, add, add);
-                    data.energy -= Math.floor(add * ratio);
+                    tiles[t].energyReceive(type, add, add);
+                    data.energy -= add;
                 }
             }
         }
@@ -73,20 +74,24 @@ UpgradeAPI.registerUpgrade(ItemID.upgradeTrav, "trav", function(item, machine, c
 
 UpgradeAPI.registerUpgrade(ItemID.upgradeDisp, "disp", function(item, machine, container, data){
     if(data.gen){
-        let pos = Player.getPosition();
-        let distance = Entity.getDistanceBetweenCoords(pos, this);
-        if(distance<=5){
-            for(let s=0; s<=35; s++){
-                let it = Player.getInventorySlot(s);
-                let dat = ChargeItemRegistry.getItemData(it.id);
-                if(dat){
-                    let ratio = EnergyTypeRegistry.getValueRatio(dat.energy, "FE");
-                    data.energy -= ChargeItemRegistry.addEnergyTo(it, dat.energy, Math.floor(data.energy / ratio)) * ratio;
-                }
+        let playersNear = {}, type = EnergyNetBuilder.getNetOnCoords(machine.x, machine.y, machine.z).energyName;
+        for(let i in Network.getConnectedPlayers()){
+            let pl = Network.getConnectedPlayers()[i],
+                dist = Entity.getDistanceBetweenCoords(Entity.getPosition(pl), machine);
+            if(dist <= 5){
+                playersNear[dist] = pl;
+            }
+        }
+        let nearest = playersNear[Math.min.apply(Math, Object.keys(playersNear))];
+        for(let s = 0; s <= 35; s++){
+            let slot = nearest.getInventorySlot(s);
+            if(ChargeItemRegistry.isValidItem(slot.id, type, 1)){
+                data.energy -= ChargeItemRegistry.addEnergyTo(it, type, data.energy);
             }
         }
     }
 });
+
 
 //block charging upgrade
 
@@ -97,50 +102,44 @@ IDRegistry.genItemID("upgradeBchargeBound");
 Item.createItem("upgradeBchargeBound", "Block Charging Upgrade", {name: "bcharge", meta: 0}, {stack: 1, isTech: true});
 Item.setGlint(ItemID.upgradeBchargeBound, true);
 
-Callback.addCallback("ItemUse", function(coords, item, block){
-    if(item.id==ItemID.upgradeBcharge&&Entity.getSneaking(p)){
+Callback.addCallback("ItemUse", function(coords, item, block, player){
+    if(item.id==ItemID.upgradeBcharge&&Entity.getSneaking(player)){
         if(World.getTileEntity(coords.x, coords.y, coords.z).canReceiveEnergy){
             var extra = item.extra;
             if(!extra) extra = new ItemExtraData();
             extra.putInt("x", coords.x);
             extra.putInt("y", coords.y);
             extra.putInt("z", coords.z);
+            extra.putInt("dim", World.getTileEntity(coords.x, coords.y, coords.z).dimension);
             Player.decreaseCarriedItem(1);
             Player.addItemToInventory(ItemID.upgradeBchargeBound, 1, 0, extra);
         } else return;
     }
 });
-    
+
 Item.registerNameOverrideFunction(ItemID.upgradeBchargeBound, function(item, name){
     if(item.extra){
-        name += "\n" + "X: " + item.extra.getInt("x") + ", Y: " + item.extra.getInt("y") + ", Z: " + item.extra.getInt("z");
-    } else name += "This shit does not work!"
+        name += "\n" + "X: " + item.extra.getInt("x") + ", Y: " + item.extra.getInt("y") + ", Z: " + item.extra.getInt("z") + "\n" + Translation.translate("in dimension") + item.extra.getInt("dim") + ".";
+    } else name += "This shit does not work!";
+    return name;
 });
 
 UpgradeAPI.registerUpgrade(ItemID.upgradeBchargeBound, "bcharge", function(item, machine, container, data){
-    if(item.extra&&data.gen){
-        let x = item.extra.getInt("x");
-        let y = item.extra.getInt("y");
-        let z = item.extra.getInt("z");
-        let te = World.getTileEntity(x, y, z);
-        let blockIsInRange = false;
-        for(var xx=machine.x-16; xx<=machine.x+16; xx++){
-            for(var yy=machine.y-16; yy<=machine.y+16; yy++){
-                for(var zz=machine.z-16; zz<=machine.z+16; zz++){
-                    if(xx==x&&yy==y&&zz==z){
-                        blockIsInRange = true;
-                        break;
-                    } else blockIsInRange = false;
+    if(item.extra && data.gen){
+        if(item.extra.getInt("dim") == machine.dimension){
+            let x = item.extra.getInt("x"), y = item.extra.getInt("y"), z = item.extra.getInt("z"), 
+                mx = machine.x, my = machine.y, mz = machine.z,
+                te = World.getTileEntity(x, y, z), blockIsInRange = false;
+            let blockIsInRange = false;
+            if(Math.abs(mx - x) <= 16 && Math.abs(my - y) <= 16 && Math.abs(mz - z) <= 16){ blockIsInRange = true; };
+            if(blockIsInRange){
+                if(te && te.canReceiveEnergy()){
+                    let val = Math.min(data.output * data.updateTimer, data.energy);
+                    if(EnergyNetBuilder.getNetOnCoords(mx, my, mz).energyName == EnergyNetBuilder.getNetOnCoords(x, y, z)){
+                        te.energyReceive(EnergyNetBuilder.getNetOnCoords(x, y, z).energyName, val, val);
+                        data.energy -= val;
+                    }
                 }
-            }
-        }
-        if(blockIsInRange==true){
-            if(te && te.canReceiveEnergy){
-                let val = Math.min(data.output, data.energy), 
-                type = Object.keys(te.__energyTypes)[0],
-                ratio = EnergyTypeRegistry.getValueRatio(type, "FE");
-                te.energyReceive(type, Math.floor(val / ratio), Math.floor(val / ratio));
-                data.energy -= val;
             }
         }
     }

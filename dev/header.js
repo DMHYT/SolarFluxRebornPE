@@ -1,12 +1,9 @@
 /*
-                    _                             ___    _                                        _                                     ______   ______ 
-                   | |                           /  _\  | |                                      | |                                   |  __  \ |  ____|
-  _____    _____   | |    ___ _    _ ___       _|  /_   | |   _   _    _  _      _ ___    ____   | |___    _____    _ ___    _ ___     | |__)  ||  |___
- /  ___|  /  _  \  | |   /  _' |  | '___|     |_  ___|  | |  | | | |  \ \/ /    | '___|  / __ \  |  _  \  /  _  \  | '___|  | '_  \    |  ____/ |  ___|
- \___  \  | (_) |  | |  |  (_| |  | |           | |     | |  | |_| |   |  |     | |     |   __/  | (_) |  | (_) |  | |      | | | |    | |      | |____
- |_____/  \_____/  |_|   \___,_|  |_|           |_|     |_|   \_,_,|  /_/\_\    |_|      \____|  |_____/  \_____/  |_|      |_| |_|    |_|      |______|
- 
- 
+
+█▀▀ █▀▀█ █   █▀▀█ █▀▀█   █▀▀ █   █  █ █ █   █▀▀█ █▀▀ █▀▀▄ █▀▀█ █▀▀█ █▀▀▄   █▀▀█ █▀▀
+▀▀█ █  █ █   █▄▄█ █▄▄▀   █▀▀ █   █  █ ▄▀▄   █▄▄▀ █▀▀ █▀▀▄ █  █ █▄▄▀ █  █   █  █ █▀▀
+▀▀▀ ▀▀▀▀ ▀▀▀ ▀  ▀ ▀ ▀▀   ▀   ▀▀▀  ▀▀▀ ▀ ▀   ▀ ▀▀ ▀▀▀ ▀▀▀  ▀▀▀▀ ▀ ▀▀ ▀  ▀   █▀▀▀ ▀▀▀
+
 */
 
 //© vstannumdum 2020
@@ -21,26 +18,16 @@ IMPORT("StorageInterface");
 
 const GUI_SCALE = 3.2;
 const EU = EnergyTypeRegistry.assureEnergyType("Eu", 1);
-const RF = EnergyTypeRegistry.assureEnergyType("RF", 0.25);
-const FE = EnergyTypeRegistry.assureEnergyType("FE", 0.25);
-const BT = EnergyTypeRegistry.assureEnergyType("BU", 0.25);
-const QE = EnergyTypeRegistry.assureEnergyType("QE", 1);
-const energyTypes = [FE, EU, RF, BT, QE];
+const RF = EnergyTypeRegistry.assureEnergyType("RF", 1 / 4);
 const p = Player.get();
+const PANELS_ARRAY = [];
 
 Callback.addCallback("LevelLoaded", function(){
     Game.message("§4Solar§eFlux§1Reborn§aPE §l§6by vstannumdum 2020");
 });
 
-var debugEnabled = __config__.getBool("debug");
-
-function validChargeItem(id){
-    return ChargeItemRegistry.isValidItem(id, "Eu", 1) ||
-    ChargeItemRegistry.isValidItem(id, "RF", 1) ||
-    ChargeItemRegistry.isValidItem(id, "FE", 1) ||
-    ChargeItemRegistry.isValidItem(id, "BT", 1) ||
-    ChargeItemRegistry.isValidItem(id, "QE", 1);
-}
+const debugEnabled = __config__.getBool("debug");
+const EUP = __config__.getBool("EU_panels");
 
 function getNeighbours(coords){
     return [
@@ -49,4 +36,22 @@ function getNeighbours(coords){
         {x: coords.x, y: coords.y, z: coords.z+1},
         {x: coords.x, y: coords.y, z: coords.z-1}
     ];
+}
+
+//from https://github.com/DMHYT/different-codes/
+
+function FANCYNUM(str){
+    if(typeof str != "string") str = str.toString();
+    let a = str.split("").reverse(), nw = [], o = 0;
+    for(let i in a){
+        nw.push(a[i]);
+        o++;
+        if(o == 3){
+            o = 0;
+            nw.push(",");
+        }
+    }
+    nw = nw.reverse();
+    if(nw[0] == ".") delete nw[0];
+    return nw.join("");
 }

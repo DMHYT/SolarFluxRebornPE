@@ -8,16 +8,12 @@ Item.addCreativeGroup("sfr_details", Translation.translate("Panel Details"), [
     ItemID.photo6
 ]);
 
-Item.addCreativeGroup("sfr_panels", Translation.translate("Panels"), [
-    BlockID.panel1,
-    BlockID.panel2,
-    BlockID.panel3,
-    BlockID.panel4,
-    BlockID.panel5,
-    BlockID.panel6,
-    BlockID.panel7,
-    BlockID.panel8
-]);
+for(let i=1; i<=8; i++){
+    PANELS_ARRAY.push(BlockID["panel"+i+"_RF"]);
+    if(EUP) PANELS_ARRAY.push(BlockID["panel"+i+"_EU"]);
+}
+
+Item.addCreativeGroup("sfr_panels", Translation.translate("Panels"), PANELS_ARRAY);
 
 Item.addCreativeGroup("sfr_upgrades", Translation.translate("Panel Upgrades"), [
     ItemID.upgradeBlank,

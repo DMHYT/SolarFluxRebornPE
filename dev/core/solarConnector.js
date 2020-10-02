@@ -1,6 +1,11 @@
 //Любезно советуем вам переместиться в какие-либо другие файлы этого мода)
 //Тут просто говнокод, уходите не позорьте меня +_+
 
+Network.addClientPacket("solarflux.panelMapping", function(){
+    SolarConnector.update(packetData.c, packetData.ident);
+    if(debugEnabled){ Debug.m("panel successfully mapped for the client"); }
+});
+
 const SolarConnector = {
     list: {},
     baseCube: function(model, tex){
@@ -104,6 +109,7 @@ const SolarConnector = {
                     let c = getNeighbours(coords.relative)[i];
                     if(World.getBlockID(c.x, c.y, c.z)==item.id){
                         SolarConnector.update(c, ident);
+                        Network.sendToAllClients("solarflux.panelMapping", {c: c, ident: ident});
                         if(debugEnabled) Debug.m("panel detected near, connection was successfull");
                     } else if(debugEnabled) Debug.m("panel not found near");
                 }
@@ -114,6 +120,7 @@ const SolarConnector = {
                         let c = getNeighbours(coords)[i];
                         if(World.getBlockID(c.x, c.y, c.z)==block.id){
                             SolarConnector.update(c, ident);
+                            Network.sendToAllClients("solarflux.panelMapping", {c: c, ident: ident});
                             if(debugEnabled) Debug.m("panel detected near, connection was successfull");
                         } else if(debugEnabled) Debug.m("panel not found near");
                     }
