@@ -97,8 +97,9 @@ const SolarConnector = {
         this.baseCube(idd.models[15], tex);
         idd.renders[15].addEntry(idd.models[15]);
     },
-    setConnectablePanel: function(id, ident){
+    setConnectablePanel: function(id, ident, energyType){
         Block.setShape(id, 0, 0, 0, 1, 13/32, 1);
+        TileEntity.getPrototype(id).__connectedPanelNets = {};
         if(this.list[ident]){
             BlockRenderer.enableCoordMapping(id, -1, this.list[ident].renders[0]);
             Block.registerPlaceFunction(id, function(coords, item){
@@ -109,6 +110,7 @@ const SolarConnector = {
                     let c = getNeighbours(coords.relative)[i];
                     if(World.getBlockID(c.x, c.y, c.z)==item.id){
                         SolarConnector.update(c, ident);
+                        SolarConnector.connectPanelNets(c, id, energyType);
                         Network.sendToAllClients("solarflux.panelMapping", {c: c, ident: ident});
                         if(debugEnabled) Debug.m("panel detected near, connection was successfull");
                     } else if(debugEnabled) Debug.m("panel not found near");
@@ -120,6 +122,7 @@ const SolarConnector = {
                         let c = getNeighbours(coords)[i];
                         if(World.getBlockID(c.x, c.y, c.z)==block.id){
                             SolarConnector.update(c, ident);
+                            SolarConnector.connectPanelNets(c, block.id);
                             Network.sendToAllClients("solarflux.panelMapping", {c: c, ident: ident});
                             if(debugEnabled) Debug.m("panel detected near, connection was successfull");
                         } else if(debugEnabled) Debug.m("panel not found near");
@@ -218,5 +221,24 @@ const SolarConnector = {
                 }
         }
         if(debugEnabled) Debug.m("val: "+val);
+    },
+    connectPanelNets: function(c, bid, type){
+        let connected = false;
+        for(let i in getNeighbours(c)){
+            let cc = getNeighbours(c)[i], tile = World.getTileEntity(cc.x, cc.y, cc.z),
+            net = PanelNetBuilder.getNetOnCoords(cc.x, cc.y, cc.z);
+            if(net){
+                if(!connected){
+                    connected = true;
+                    net.addTileEntity(World.getTi)
+                } else {
+    
+                }
+            } else if(i < 3) continue; else if(i == 3){
+                let net = PanelNetBuilder.createNet(type, bid);
+                net.addTileEntity(tile);
+            }
+            this.connectPanelNets(cc, bid, type);
+        }
     }
 }
