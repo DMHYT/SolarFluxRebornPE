@@ -72,6 +72,7 @@ const SolarRegistry = {
             isEnergySource: function(){ return true; },
             onItemClick: function(id, count, data, coords){
                 if (id == ItemID.debugItem || id == ItemID.EUMeter) return false;
+                if (PANEL_UPS.indexOf(id) !== -1) return false;
                 if (this.click(id, count, data, coords)) return true;
                 if (Entity.getSneaking(p)) return false;
                 var gui = this.getGuiScreen();

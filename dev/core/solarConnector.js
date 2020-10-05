@@ -223,22 +223,26 @@ const SolarConnector = {
         if(debugEnabled) Debug.m("val: "+val);
     },
     connectPanelNets: function(c, bid, type){
-        let connected = false;
+        let neighs = [];
+        let nett = PanelNetBuilder.createNet(type, bid);
+        nett.addTileEntity(World.getTileEntity(c.x, c.y, c.z));
         for(let i in getNeighbours(c)){
-            let cc = getNeighbours(c)[i], tile = World.getTileEntity(cc.x, cc.y, cc.z),
-            net = PanelNetBuilder.getNetOnCoords(cc.x, cc.y, cc.z);
-            if(net){
-                if(!connected){
-                    connected = true;
-                    net.addTileEntity(World.getTi)
-                } else {
-    
+            let cc = getNeighbours(c)[i];
+            if(World.getBlockID(cc.x, cc.y, cc.z) == World.getBlockID(c.x, c.y, c.z)){
+                let tile = World.getTileEntity(cc.x, cc.y, cc.z),
+                net = PanelNetBuilder.getNetOnCoords(cc.x, cc.y, cc.z);
+                if(net){
+                    neighs[i] = net;
                 }
-            } else if(i < 3) continue; else if(i == 3){
-                let net = PanelNetBuilder.createNet(type, bid);
-                net.addTileEntity(tile);
-            }
-            this.connectPanelNets(cc, bid, type);
+            } else continue;
+        }
+        switch(neighs.length){
+            case 0: break;
+            case 1: PanelNetBuilder.mergeNets(nett, neighs[0]); break;
+            case 2: case 3: case 4: 
+                for(let i in neighs){ 
+                    PanelNetBuilder.mergeNets(net, neighs[i]);
+                }; break;
         }
     }
 }

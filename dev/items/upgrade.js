@@ -144,3 +144,21 @@ UpgradeAPI.registerUpgrade(ItemID.upgradeBchargeBound, "bcharge", function(item,
         }
     }
 });
+
+var PANEL_UPS = [ItemID.upgradeEff, ItemID.upgradeTransf, ItemID.upgradeCap, ItemID.upgradeFurn, ItemID.upgradeTrav, ItemID.upgradeDisp, ItemID.upgradeBchargeBound];
+
+Callback.addCallback("ItemUse", function(coords, item, block, isExternal, player){
+    if(SolarRegistry.isPanel(block.id) && PANEL_UPS.indexOf(item.id) !== -1){
+        let tile = World.getTileEntity(coords.x, coords.y, coords.z);
+        for(let i in tile.container.slots){
+            let slot = tile.container.getSlot(tile.container.slots[i]);
+            if(!tile.container.slots[i].startsWith("slotUpgrade", 0)) continue;
+            if(slot.id == item.id && slot.count == Item.getMaxStack(item.id)) return;
+            if((slot.id == item.id && slot.count < Item.getMaxStack(item.id)) || slot.id == 0){
+                let put = Math.min(Item.getMaxStack(item.id), (Item.getMaxStack(item.id) - slot.count));
+                tile.container.setSlot(slot.id, slot.count + put, slot.data, slot.extra);
+                tile.container.sendChanges();
+            }
+        }
+    }
+});

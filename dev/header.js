@@ -29,6 +29,8 @@ Callback.addCallback("LevelLoaded", function(){
 const debugEnabled = __config__.getBool("debug");
 const EUP = __config__.getBool("EU_panels");
 
+var GLOBAL_PANELNET_ID = 0;
+
 function getNeighbours(coords){
     return [
         {x: coords.x+1, y: coords.y, z: coords.z},
