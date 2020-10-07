@@ -1,3 +1,28 @@
+function returnPanelElements(header, isEU, energyStorage){
+    let elems = {
+        "textHeader": {type: "text", x: 500, y: 30, font: {color: android.graphics.Color.WHITE, size: 25, alignment: UI.Font.ALIGN_CENTER}, text: header},
+        "energyBarScale": {type: "scale", x: 648, y: 118, z: 1, scale: 3, direction: 1, value: 0.5, bitmap: "energy_bar_scale"},
+        "textStored": {type: "text", x: 300, y: 65, z: 1, width: 300, height: 35, font: {color: android.graphics.Color.WHITE, size: 20}, text: Translation.translate("Stored")+": 0 "+(isEU ? "EU" : "FE")},
+        "textCap": {type: "text", x: 300, y: 105, z: 1, width: 300, height: 35, font: {color: android.graphics.Color.WHITE, size: 20}, text: Translation.translate("Capacity")+": "+FANCYNUM(energyStorage)+" "+(isEU ? "EU" : "FE")},
+        "textGen": {type: "text", x: 300, y: 145, z: 1, width: 300, height: 35, font: {color: android.graphics.Color.WHITE, size: 20}, text: Translation.translate("Generation")+": 0 "+(isEU ? "EU" : "FE")+"/"+Translation.translate("tick")},
+        "slotCharge1": {type: "slot", x: 652, y: 65, z: 1, size: 45, isValid: function(id){
+            return isEU ? ChargeItemRegistry.isValidItem(id, "Eu", 1) : ChargeItemRegistry.isValidItem(id, "RF", 1);
+        }},
+    };
+    //upgrade slots
+    for(let i=1; i<=5; i++){
+        elems["slotUpgrade"+i] = {type: "slot", x: 299 + --i * 45, y: 228, z: 1, size: 45, isValid: UpgradeAPI.isValidUpgrade}
+    }
+    //inventory
+    for(let i=0; i<9; i++){
+        elems["invSlot"+i] = {type: "invSlot", x: 299 + i * 45, y: 433, z: 1, size: 45, index: i}
+    }
+    for(let i=9; i<36; i++){
+        elems["invSlot"+i] = {type: "invSlot", x: 299 + (i % 9) * 45, y: 433 + Math.floor(i / 9) * 45, z: 1, index: i}
+    }
+    return elems;
+}
+
 const SolarRegistry = {
     panelIDs: {},
     panelGUIs: {},
@@ -22,28 +47,15 @@ const SolarRegistry = {
             output: Math.round(stats.gen / div),
             energy_storage: Math.round(stats.gen / div)
         }
-        this.panelGUIs[ident] = new UI.StandartWindow({
-            standart: {
-                header: {text: {text: header}},
-                inventory: {standart: true},
-                background: {standart: true}
-            },
-            drawing: [{type: "bitmap", x: 720, y: 100, bitmap: "energy_bar_background", scale: GUI_SCALE}],
-            elements: {
-                "energyBarScale": {type: "scale", x: 720, y: 100, direction: 1, value: 0.5, bitmap: "energy_bar_scale", scale: GUI_SCALE},
-                "textStored": {type: "text", x: 350, y: 100, width: 300, height: 30, text: Translation.translate("Stored")+": 0 "+(isEU ? "EU" : "FE")},   
-                "textCap": {type: "text", x: 350, y: 130, width: 300, height: 30, text: Translation.translate("Capacity")+": "+FANCYNUM(this.panelStats[ident].energy_storage)+" "+(isEU ? "EU" : "FE")},
-                "textGen": {type: "text", x: 350, y: 160, width: 300, height: 30, text: Translation.translate("Generation")+": 0 "+(isEU ? "EU" : "FE")+"/"+Translation.translate("tick")},
-                "slotUpgrade1": {type: "slot", x: 350, y: 270, isValid: UpgradeAPI.isValidUpgrade},
-                "slotUpgrade2": {type: "slot", x: 414, y: 270, isValid: UpgradeAPI.isValidUpgrade},
-                "slotUpgrade3": {type: "slot", x: 480, y: 270, isValid: UpgradeAPI.isValidUpgrade},
-                "slotUpgrade4": {type: "slot", x: 544, y: 270, isValid: UpgradeAPI.isValidUpgrade}, 
-                "slotUpgrade5": {type: "slot", x: 610, y: 270, isValid: UpgradeAPI.isValidUpgrade},
-                "slotCharge1": {type: "slot", x: 820, y: 100, bitmap: "charge_slot", isValid: (
-                    isEU ? function(id){ return ChargeItemRegistry.isValidItem(id, "Eu", 1); } :
-                        function(id){ return ChargeItemRegistry.isValidItem(id, "RF", 1); }
-                )}
-            }
+        this.panelGUIs[ident] = new UI.Window({
+            location: { x: 0, y: 0, width: 1000, height: 520 },
+            params: {},
+            drawing: [
+                {type: "background", color: android.graphics.Color.argb(90, 0, 0, 0)},
+                {type: "bitmap", x: 282, y: 50, bitmap: "solarui", scale: 2.5},
+                {type: "bitmap", x: 648, y: 118, z: 1, scale: 3, bitmap: "energy_bar_background"}
+            ],
+            elements: returnPanelElements(header, isEU, this.panelStats[ident].energy_storage)
         });
         TileEntity.registerPrototype(id, {
             useNetworkItemContainer: true,
@@ -151,9 +163,9 @@ const SolarRegistry = {
             slots: {
                 "slotCharge1": {input: true}  
             },
-            isValidInput: isEU ? 
-                function(id){ return ChargeItemRegistry.isValidItem(id, "Eu", 1); } :
-                function(id){ return ChargeItemRegistry.isValidItem(id, "RF", 1) },
+            isValidInput: function(id){
+                return isEU ? ChargeItemRegistry.isValidItem(id, "Eu", 1) : ChargeItemRegistry.isValidItem(id, "RF", 1);
+            }
         });
     }
 };
