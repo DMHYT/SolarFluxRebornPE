@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "target": "ES5",
+        "lib": ["ESNext"],
+        "outDir": "js/",
+        "allowJs": true,
+        "experimentalDecorators": true
+    },
+    "compileOnSave": false,
+    "include": [
+        "declarations/*.d.ts",
+        "mod/**/*.ts"
+    ]
+}

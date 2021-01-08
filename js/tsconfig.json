@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "allowJs": true,
+        "experimentalDecorators": false,
+        "target": "ES5",
+        "lib": ["ESNext"],
+        "outFile": "../mod/SolarFluxRebornPE/main.js"
+    },
+    "compileOnSave": false,
+    "include": [
+
+    ], 
+    "exclude": [
+
+    ]
+}
