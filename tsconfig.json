@@ -9,6 +9,6 @@
     "compileOnSave": false,
     "include": [
         "declarations/*.d.ts",
-        "mod/**/*.ts"
+        "source/**/*.ts"
     ]
 }
