@@ -39,7 +39,7 @@ class SolarInfo {
     }
     public getCompatMod(): string {return this.compatMod;};
     
-
+    public computeSunIntensity(solar: TileBaseSolar): number {return}; //TODO
 
 
     
