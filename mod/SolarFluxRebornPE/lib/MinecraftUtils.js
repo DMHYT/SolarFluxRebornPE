@@ -19,6 +19,13 @@ LIBRARY({
 });
 var MinecraftUtils;
 (function (MinecraftUtils) {
+    var RayTraceResultType;
+    (function (RayTraceResultType) {
+        RayTraceResultType[RayTraceResultType["MISS"] = 0] = "MISS";
+        RayTraceResultType[RayTraceResultType["BLOCK"] = 1] = "BLOCK";
+        RayTraceResultType[RayTraceResultType["ENTITY"] = 2] = "ENTITY";
+    })(RayTraceResultType || (RayTraceResultType = {}));
+    ;
     var RayTraceResult = /** @class */ (function (_super) {
         __extends(RayTraceResult, _super);
         function RayTraceResult(par1, par2, par3, par4) {
@@ -53,17 +60,10 @@ var MinecraftUtils;
         RayTraceResult.prototype.toString = function () {
             return "HitResult{type=" + this.typeOfHit + ", blockpos=" + this.blockPos + ", f=" + this.sideHit + ", pos=" + this.hitVec + ", entity=" + this.entityHit + "}";
         };
+        RayTraceResult.Type = RayTraceResultType;
         return RayTraceResult;
     }(java.lang.Object));
     MinecraftUtils.RayTraceResult = RayTraceResult;
-    (function (RayTraceResult) {
-        var Type;
-        (function (Type) {
-            Type[Type["MISS"] = 0] = "MISS";
-            Type[Type["BLOCK"] = 1] = "BLOCK";
-            Type[Type["ENTITY"] = 2] = "ENTITY";
-        })(Type = RayTraceResult.Type || (RayTraceResult.Type = {}));
-    })(RayTraceResult = MinecraftUtils.RayTraceResult || (MinecraftUtils.RayTraceResult = {}));
     var AxisAlignedBB = /** @class */ (function (_super) {
         __extends(AxisAlignedBB, _super);
         function AxisAlignedBB(x1, y1, z1, x2, y2, z2) {
@@ -1128,62 +1128,6 @@ var MinecraftUtils;
         }
         MathHelper.intFloorDiv = intFloorDiv;
     })(MathHelper = MinecraftUtils.MathHelper || (MinecraftUtils.MathHelper = {}));
-    var MovingObjectPosition = /** @class */ (function (_super) {
-        __extends(MovingObjectPosition, _super);
-        function MovingObjectPosition(par1, par2, par3, blockpos) {
-            var _this = _super.call(this) || this;
-            if (par1 instanceof Vec3d && par2 instanceof EnumFacing) {
-                if (typeof par3 !== "undefined") {
-                    return new MovingObjectPosition(MovingObjectPosition.MovingObjectType.BLOCK, par1, par2, par3);
-                }
-                else {
-                    return new MovingObjectPosition(MovingObjectPosition.MovingObjectType.BLOCK, par1, par2, BlockPos.ORIGIN);
-                }
-            }
-            else if (typeof par1 === "number") {
-                if (typeof par2 !== "undefined") {
-                    _this.typeOfHit = MovingObjectPosition.MovingObjectType.ENTITY;
-                    _this.entityHit = par1;
-                    par2 = par2;
-                    _this.blockX = par2.xCoord;
-                    _this.blockY = par2.yCoord;
-                    _this.blockZ = par2.zCoord;
-                }
-                else {
-                    var pos = Entity.getPosition(par1);
-                    return new MovingObjectPosition(par1, new Vec3d(pos.x, pos.y, pos.z));
-                }
-            }
-            else if (typeof par1 === "number" && par2 instanceof Vec3d && par3 instanceof EnumFacing && typeof blockpos !== "undefined") {
-                _this.typeOfHit = par1;
-                _this.blockX = blockpos.getX();
-                _this.blockY = blockpos.getY();
-                _this.blockZ = blockpos.getZ();
-                _this.sideHit = par3.getIndex();
-                _this.hitVec = par2.scale(1);
-            }
-            return _this;
-        }
-        MovingObjectPosition.prototype.toString = function () {
-            return "HitResult{type=" + this.typeOfHit + ", blockX=" + this.blockX + ", blockY=" + this.blockY + ", blockZ=" + this.blockZ + ", sideHit=" + EnumFacing.VALUES[this.sideHit] + ", pos=" + this.hitVec + ", entity=" + this.entityHit + "}";
-        };
-        return MovingObjectPosition;
-    }(java.lang.Object));
-    MinecraftUtils.MovingObjectPosition = MovingObjectPosition;
-    (function (MovingObjectPosition) {
-        var MovingObjectType;
-        (function (MovingObjectType) {
-            MovingObjectType[MovingObjectType["MISS"] = 0] = "MISS";
-            MovingObjectType[MovingObjectType["BLOCK"] = 1] = "BLOCK";
-            MovingObjectType[MovingObjectType["ENTITY"] = 2] = "ENTITY";
-        })(MovingObjectType = MovingObjectPosition.MovingObjectType || (MovingObjectPosition.MovingObjectType = {}));
-        (function (MovingObjectType) {
-            function values() {
-                return [MovingObjectType.MISS, MovingObjectType.BLOCK, MovingObjectType.ENTITY];
-            }
-            MovingObjectType.values = values;
-        })(MovingObjectType = MovingObjectPosition.MovingObjectType || (MovingObjectPosition.MovingObjectType = {}));
-    })(MovingObjectPosition = MinecraftUtils.MovingObjectPosition || (MinecraftUtils.MovingObjectPosition = {}));
 })(MinecraftUtils || (MinecraftUtils = {}));
 //static code
 for (var i in MinecraftUtils.EnumFacing.VALUES) {

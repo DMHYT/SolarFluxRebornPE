@@ -46,7 +46,7 @@ class TileBaseSolar extends TEClass {
         let panelClass: BlockBaseSolar = BlockBaseSolar.getPanelClass(this.blockSource.getBlockId(this.x, this.y, this.z));
         if(panelClass !== null){
             let si: SolarInfo = panelClass.solarInfo;
-            this.renderConnectedTextures = null;//TODO
+            this.renderConnectedTextures = si.hasConnectedTextures();//TODO
         }
     }
 }

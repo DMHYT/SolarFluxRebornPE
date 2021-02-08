@@ -1,24 +1,23 @@
 declare namespace MinecraftUtils {
+    enum RayTraceResultType {
+        MISS = 0,
+        BLOCK = 1,
+        ENTITY = 2
+    }
     export class RayTraceResult extends java.lang.Object {
         private blockPos;
-        typeOfHit: RayTraceResult.Type;
+        typeOfHit: RayTraceResultType;
         sideHit: EnumFacing;
         hitVec: Vec3d;
         entityHit: number;
         constructor(hitVecIn: Vec3d, sideHitIn: EnumFacing, blockPosIn: BlockPos);
         constructor(hitVecIn: Vec3d, sideHitIn: EnumFacing);
         constructor(entityIn: number);
-        constructor(typeIn: RayTraceResult.Type, hitVecIn: Vec3d, sideHitIn: EnumFacing, blockPosIn: BlockPos);
+        constructor(typeIn: RayTraceResultType, hitVecIn: Vec3d, sideHitIn: EnumFacing, blockPosIn: BlockPos);
         constructor(entityHitIn: number, hitVecIn: Vec3d);
         getBlockPos(): BlockPos;
         toString(): string;
-    }
-    export namespace RayTraceResult {
-        enum Type {
-            MISS = 0,
-            BLOCK = 1,
-            ENTITY = 2
-        }
+        static Type: typeof RayTraceResultType;
     }
     export class AxisAlignedBB extends java.lang.Object {
         readonly minX: number;
@@ -298,31 +297,6 @@ declare namespace MinecraftUtils {
         function clamp(num: number, min: number, max: number): number;
         function lerp(value1: number, value2: number, amount: number): number;
         function intFloorDiv(f: number): number;
-    }
-    export class MovingObjectPosition extends java.lang.Object {
-        blockX: number;
-        blockY: number;
-        blockZ: number;
-        entityHit: number;
-        hitVec: Vec3d;
-        sideHit: number;
-        typeOfHit: MovingObjectPosition.MovingObjectType;
-        constructor(vec: Vec3d, dir: EnumFacing, blockpos: BlockPos);
-        constructor(vec: Vec3d, dir: EnumFacing);
-        constructor(entity: number);
-        constructor(objtype: MovingObjectPosition.MovingObjectType, vec: Vec3d, dir: EnumFacing, blockpos: BlockPos);
-        constructor(entity: number, vec: Vec3d);
-        toString(): string;
-    }
-    export namespace MovingObjectPosition {
-        enum MovingObjectType {
-            MISS = 0,
-            BLOCK = 1,
-            ENTITY = 2
-        }
-        namespace MovingObjectType {
-            function values(): MovingObjectType[];
-        }
     }
     export {};
 }
