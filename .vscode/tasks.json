@@ -1,23 +1,19 @@
 {
-	"version": "2.0.0",
-	"tasks": [
-		{
-			"type": "typescript",
-			"tsconfig": "tsconfig.json",
-			"problemMatcher": [
-				"$tsc"
-			],
-			"group": "build",
-			"label": "Build TypeScript"
-		},
-		{
-			"type": "typescript",
-			"tsconfig": "js/tsconfig.json",
-			"problemMatcher": [
-				"$tsc"
-			],
-			"group": "build",
-			"label": "Build main.js"
-		}
-	]
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Download docs",
+            "type": "shell",
+            "command": "tools\\loaddocs.bat",
+            "group": "build",
+            "problemMatcher": []
+        },
+        {
+            "label": "Build mod",
+            "type": "typescript",
+            "tsconfig": "tsconfig.json",
+            "group": "build",
+            "problemMatcher": ["$tsc"]
+        }
+    ]
 }

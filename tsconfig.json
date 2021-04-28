@@ -1,14 +1,16 @@
-{
+  {
     "compilerOptions": {
+        "allowJs": true,
+        "removeComments": true,
+        "experimentalDecorators": false,
+        "downlevelIteration": true,
         "target": "ES5",
         "lib": ["ESNext"],
-        "outDir": "js/",
-        "allowJs": true,
-        "experimentalDecorators": true
+        "outFile": "out/SolarFluxRebornPE/main.js"
     },
     "compileOnSave": false,
     "include": [
-        "declarations/*.d.ts",
-        "source/**/*.ts"
+        "tools/declarations/*.d.ts",
+        "source/header.ts",
     ]
 }
