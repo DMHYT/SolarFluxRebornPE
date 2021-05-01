@@ -12,5 +12,10 @@
     "include": [
         "tools/declarations/*.d.ts",
         "source/header.ts",
+        "source/core/utils.ts",
+        "source/core/model.ts",
+        "source/core/tile.ts",
+        "source/core/block.ts",
+        "source/footer.ts"
     ]
 }
