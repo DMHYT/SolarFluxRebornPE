@@ -45,22 +45,7 @@ namespace SFRModel {
         public readonly ALL: BlockRenderer.Model;
 
         constructor(baseTexture: string, topTexture: string){
-            this.LONE = PanelModel.createPanelModel(baseTexture, topTexture, PanelModel.ConnectionCube.LONE);
-            this.N = PanelModel.createPanelModel(baseTexture, topTexture, PanelModel.ConnectionCube.N);
-            this.S = PanelModel.createPanelModel(baseTexture, topTexture, PanelModel.ConnectionCube.S);
-            this.E = PanelModel.createPanelModel(baseTexture, topTexture, PanelModel.ConnectionCube.E);
-            this.W = PanelModel.createPanelModel(baseTexture, topTexture, PanelModel.ConnectionCube.W);
-            this.NE = PanelModel.createPanelModel(baseTexture, topTexture, PanelModel.ConnectionCube.NE);
-            this.ES = PanelModel.createPanelModel(baseTexture, topTexture, PanelModel.ConnectionCube.ES);
-            this.SW = PanelModel.createPanelModel(baseTexture, topTexture, PanelModel.ConnectionCube.SW);
-            this.WN = PanelModel.createPanelModel(baseTexture, topTexture, PanelModel.ConnectionCube.WN);
-            this.NS = PanelModel.createPanelModel(baseTexture, topTexture, PanelModel.ConnectionCube.NS);
-            this.EW = PanelModel.createPanelModel(baseTexture, topTexture, PanelModel.ConnectionCube.EW);
-            this.NES = PanelModel.createPanelModel(baseTexture, topTexture, PanelModel.ConnectionCube.NES);
-            this.ESW = PanelModel.createPanelModel(baseTexture, topTexture, PanelModel.ConnectionCube.ESW);
-            this.SWN = PanelModel.createPanelModel(baseTexture, topTexture, PanelModel.ConnectionCube.SWN);
-            this.WNE = PanelModel.createPanelModel(baseTexture, topTexture, PanelModel.ConnectionCube.WNE);
-            this.ALL = PanelModel.createPanelModel(baseTexture, topTexture, PanelModel.ConnectionCube.ALL);
+            for(let key of ALL_POSSIBLE_KEYS) this[key] = PanelModel.createPanelModel(baseTexture, topTexture, PanelModel.ConnectionCube[key]);
         }
         
     }

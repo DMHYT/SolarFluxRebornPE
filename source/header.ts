@@ -17,3 +17,17 @@
 const BLOCK = ICRender.BLOCK;
 const AND = ICRender.AND;
 const NOT = ICRender.NOT;
+
+interface PanelStats {
+    generation: number;
+    transfer: number;
+    capacity: number;
+}
+
+const getStatsFor = (id: string) => {
+    return {
+        generation: __config__.getNumber(`panel_stats.${id}.generation`).longValue(),
+        transfer: __config__.getNumber(`panel_stats.${id}.capacity`).longValue(),
+        capacity: __config__.getNumber(`panel_stats.${id}.capacity`).longValue()
+    } as PanelStats
+}
