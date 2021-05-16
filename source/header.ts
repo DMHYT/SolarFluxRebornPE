@@ -18,6 +18,8 @@ IMPORT("EnergyNet");
 IMPORT("StorageInterface");
 IMPORT("ChargeItem");
 
+const JavaMath = new (WRAP_JAVA("ua.vsdum.sfrpe.Main"))();
+
 const clamp = (num: number, min: number, max: number) => num < min ? min : (num > max ? max : num);
 const numberWithCommas = (x: number) => x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
@@ -45,3 +47,13 @@ const RF: EnergyType = EnergyTypeRegistry.assureEnergyType("RF", 0.25);
 
 // Array of all items and blocks in the mod for the creative group
 const SFR_STUFF: number[] = [];
+
+const createItem = (id: string) => {
+    IDRegistry.genItemID(`sfr_${id}`);
+    Item.createItem(`sfr_${id}`, `sfr_${id}`, {name: `sfr_${id}`, data: 0}, {stack: 64});
+    SFR_STUFF.push(ItemID[`sfr_${id}`]);
+}
+
+const addShaped = (id: number, count: number, data: number, mask: string[], keys: (string | number)[]) => {
+    Recipes.addShaped({id: id, count: count, data: data}, mask, keys);
+}

@@ -122,14 +122,14 @@ const createPanelTileFor = (id: string) => {
                         if(etile.canReceiveEnergy(traverse.side, "Eu") || etile.canReceiveEnergy(traverse.side, "RF") || etile.canReceiveEnergy(traverse.side, "FE")){
                             let type: string = etile.__energyTypes["Eu"] ? "Eu" : etile.__energyTypes["RF"] ? "RF" : "FE";
                             let ratio: number = EnergyTypeRegistry.getValueRatio("FE", type);
-                            this.data.energy -= etile.energyReceive(type, Math.min(this.data.energy, Math.round(this.data.transfer * traverse.rate)) * ratio, etile.getMaxPacketSize ? etile.getMaxPacketSize() : Math.round(this.data.transfer * traverse.rate)) * ratio;
+                            this.data.energy -= Math.round(etile.energyReceive(type, Math.round(Math.min(this.data.energy, Math.round(this.data.transfer * traverse.rate)) * ratio), etile.getMaxPacketSize ? etile.getMaxPacketSize() : Math.round(this.data.transfer * traverse.rate)) * ratio);
                         }
                     }
                 }
             } else {
                 let type: string = node.tileEntity.__energyTypes["Eu"] ? "Eu" : node.tileEntity.__energyTypes["RF"] ? "RF" : "FE";
                 let ratio: number = EnergyTypeRegistry.getValueRatio("FE", type);
-                this.data.energy -= node.tileEntity.energyReceive(type, Math.min(this.data.energy, this.data.transfer) * ratio, node.tileEntity.getMaxPacketSize ? node.tileEntity.getMaxPacketSize() : this.data.transfer * ratio) * ratio;
+                this.data.energy -= Math.round(node.tileEntity.energyReceive(type, Math.round(Math.min(this.data.energy, this.data.transfer) * ratio), node.tileEntity.getMaxPacketSize ? node.tileEntity.getMaxPacketSize() : Math.round(this.data.transfer * ratio)) * ratio);
             }
         },
         click: (id, count, data, coords, player, extra) => {

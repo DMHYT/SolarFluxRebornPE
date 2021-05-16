@@ -1,0 +1,4 @@
+{
+    "source-dirs":["src"], "library-dirs":["lib"], "verbose":true, "options":[],
+    "boot-classes":["ua.vsdum.sfrpe.Main"]
+}

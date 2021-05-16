@@ -2,15 +2,18 @@ namespace SolarUpgrades {
 
     export interface UpgradeParams {
         getMaxUpgrades(): number;
-        update(tile: TileEntity, amount: number, extra?: ItemExtraData): void;
-        canStayInPanel(tile: TileEntity, stack: ItemInstance, upgradeInv: ItemContainer): boolean;
-        canInstall(tile: TileEntity, stack: ItemInstance, upgradeInv: ItemContainer): boolean;
+        update?(tile: TileEntity, amount: number, extra?: ItemExtraData): void;
+        canStayInPanel?(tile: TileEntity, stack: ItemInstance, upgradeInv: ItemContainer): boolean;
+        canInstall?(tile: TileEntity, stack: ItemInstance, upgradeInv: ItemContainer): boolean;
         [key: string]: any;
     }
 
     export const upgrades: {[key: number]: UpgradeParams} = {};
     
     export function registerUpgrade(id: number, params: UpgradeParams): void {
+        params.update ??= () => {return};
+        params.canStayInPanel ??= () => true;
+        params.canInstall ??= () => true;
         upgrades[id] = params;
     }
 

@@ -45,6 +45,8 @@ interface BlockPosFace extends BlockPos {
     readonly rate: number;
 }
 
+const bpfFromBp = (bp: BlockPos, side: number, rate?: number) => { return {x: bp.x, y: bp.y, z: bp.z, dimension: bp.dimension, side: side, rate: rate ? rate : 1} as BlockPosFace };
+
 const offsetBlockPos = (pos: BlockPos, face: number) => {
     switch(face){
         case EBlockSide.NORTH: pos.z -= 1; break;
@@ -70,13 +72,27 @@ const oppositeFace = (face: number) => {
     }
 }
 
-const distanceBlockPos = (b1: BlockPos, b2: BlockPos) => Math.sqrt(Math.pow(b2.x - b1.x, 2) + Math.pow(b2.y - b1.y, 2) + Math.pow(b2.z - b1.z, 2));
+const distanceSqBlockPos = (b1: BlockPos, b2: BlockPos) => Math.pow(b2.x - b1.x, 2) + Math.pow(b2.y - b1.y, 2) + Math.pow(b2.z - b1.z, 2)
+const distanceBlockPos = (b1: BlockPos, b2: BlockPos) => Math.sqrt(distanceSqBlockPos(b1, b2));
+
+const blockPosFromLong = (serialized: number) => {
+    let pos: BlockPos = {} as BlockPos;
+    JavaMath.fromLong(serialized, pos);
+    return pos;
+}
+
+const blockPosFromEntity = (entity: number) => {
+    let pos: Vector = Entity.getPosition(entity);
+    return {x: pos.x, y: pos.y, z: pos.z, dimension: Entity.getDimension(entity)} as BlockPos;
+}
+
+const blockPosFromTile = (tile: TileEntity) => { return {x: tile.x, y: tile.y, z: tile.z, dimension: tile.dimension} as BlockPos }
 
 namespace Traversal {
 
     export const cache: java.util.List<BlockPos> = new java.util.ArrayList<Vector>();
 
-    export function update(tile: TileEntity, stack: ItemInstance, amount: number): void {
+    export function update(tile: TileEntity): void {
         if(World.getWorldTime() % 20 == 0){
             cache.clear();
             (tile.data.traversal as java.util.ArrayList<BlockPosFace>).clear();

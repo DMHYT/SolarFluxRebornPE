@@ -11,6 +11,10 @@ namespace SFRModel {
         const conditions = new RenderCondition(group);
         for(let key of ALL_POSSIBLE_KEYS) render.addEntry(models[key]).setCondition(conditions[key]);
         BlockRenderer.setStaticICRender(id, -1, render);
+        const shape = new ICRender.CollisionShape();
+        const entry = shape.addEntry().addBox(0, 0, 0, 1, 6/16, 1);
+        BlockRenderer.setCustomCollisionShape(id, -1, shape);
+        BlockRenderer.setCustomRaycastShape(id, -1, shape);
         ItemModel.getFor(id, 0).setModel(models.LONE);
     }
 

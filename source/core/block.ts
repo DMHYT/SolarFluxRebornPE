@@ -9,4 +9,5 @@ const createPanel = (name: string) => {
     EnergyTileRegistry.addEnergyTypeForId(BlockID[name], FE);
     EnergyTileRegistry.addEnergyTypeForId(BlockID[name], EU);
     EnergyTileRegistry.addEnergyTypeForId(BlockID[name], RF);
+    SFR_STUFF.push(BlockID[name]);
 }
