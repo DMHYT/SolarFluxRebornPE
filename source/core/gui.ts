@@ -1,33 +1,30 @@
 const createSolarGuiFor = (header: string) => {
     let offset: number = Math.floor((UI.getScreenHeight() - 440) / 2);
     let chargeSlotClicker: UI.UIClickEvent = {
-        onClick: (position, container) => {
+        onClick: (position, container: ItemContainer) => {
             let slot = container.getSlot("slotCharge");
-            if(slot.id != 0 && slot.count > 0) Player.addItemToInventory(slot.id, slot.count, slot.data, slot.extra, false);
-            container.clearSlot("slotCharge");
-            (container as ItemContainer).sendChanges();
+            if(slot.id != 0 && slot.count > 0) container.handleSlotToInventoryTransaction("slotCharge", 1);
+        },
+        onLongClick: (position, container: ItemContainer) => {
+            let slot = container.getSlot("slotCharge");
+            if(slot.id != 0 && slot.count > 0) container.handleSlotToInventoryTransaction("slotCharge", slot.count);
         }
     }
     let slotUpgradeClicker = (num: number) => {
         return {
-            onClick: (position, container) => {
+            onClick: (position, container: ItemContainer) => {
                 let slot = container.getSlot(`slotUpgrade${num}`);
-                if(slot.id != 0 && slot.count > 0) Player.addItemToInventory(slot.id, 1, slot.data, slot.extra, false);
-                container.setSlot(`slotUpgrade${num}`, slot.id, slot.count - 1, slot.data, slot.extra);
-                container.validateSlot(`slotUpgrade${num}`);
-                (container as ItemContainer).sendChanges();
+                if(slot.id != 0 && slot.count > 0) container.handleSlotToInventoryTransaction(`slotUpgrade${num}`, 1);
             },
-            onLongClick: (position, container) => {
+            onLongClick: (position, container: ItemContainer) => {
                 let slot = container.getSlot(`slotUpgrade${num}`);
-                if(slot.id != 0 && slot.count > 0) Player.addItemToInventory(slot.id, slot.count, slot.data, slot.extra, false);
-                container.clearSlot(`slotUpgrade${num}`);
-                (container as ItemContainer).sendChanges();
+                if(slot.id != 0 && slot.count > 0) container.handleSlotToInventoryTransaction(`slotUpgrade${num}`, slot.count);
             }
         } as UI.UIClickEvent;
     }
     let inventorySlotClicker = (num: number) => {
         return {
-            onClick: (position, container, tile) => {
+            onClick: (position, container: ItemContainer, tile: SFRTile.PanelTile) => {
                 let slot = Player.getInventorySlot(num);
                 if(slot.id != 0 && slot.count > 0){
                     if(SolarUpgrades.isUpgrade(slot.id)){
@@ -36,12 +33,11 @@ const createSolarGuiFor = (header: string) => {
                         ChargeItemRegistry.isValidItem(slot.id, "Eu", 1) || 
                         ChargeItemRegistry.isValidItem(slot.id, "RF", 1) || 
                         ChargeItemRegistry.isValidItem(slot.id, "FE", 1)) && container.getSlot("slotCharge").id == 0){
-                        container.setSlot("slotCharge", slot.id, slot.count, slot.data, slot.extra);
-                        (container as ItemContainer).sendChanges();
+                            container.handleInventoryToSlotTransaction(num, "slotCharge", 1);
                     }
                 }
             },
-            onLongClick: (position, container, tile) => {
+            onLongClick: (position, container: ItemContainer, tile) => {
                 let slot = Player.getInventorySlot(num);
                 if(slot.id != 0 && slot.count > 0){
                     if(SolarUpgrades.isUpgrade(slot.id)){
@@ -50,8 +46,7 @@ const createSolarGuiFor = (header: string) => {
                         ChargeItemRegistry.isValidItem(slot.id, "Eu", 1) || 
                         ChargeItemRegistry.isValidItem(slot.id, "RF", 1) || 
                         ChargeItemRegistry.isValidItem(slot.id, "FE", 1)) && container.getSlot("slotCharge").id == 0){
-                        container.setSlot("slotCharge", slot.id, slot.count, slot.data, slot.extra);
-                        (container as ItemContainer).sendChanges();
+                            container.handleInventoryToSlotTransaction(num, "slotCharge", slot.count);
                     }
                 }
             }

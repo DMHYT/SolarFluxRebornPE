@@ -5,7 +5,7 @@ const createPanel = (name: string) => {
     ICRender.getGroup("ic-wire").add(BlockID[name], -1);
     ICRender.getGroup("rf-wire").add(BlockID[name], -1);
     SFRModel.setPanelRender(BlockID[name], `${name}_base`, `${name}_top`);
-    createPanelTileFor(name);
+    SFRTile.createPanelTileFor(name);
     EnergyTileRegistry.addEnergyTypeForId(BlockID[name], FE);
     EnergyTileRegistry.addEnergyTypeForId(BlockID[name], EU);
     EnergyTileRegistry.addEnergyTypeForId(BlockID[name], RF);

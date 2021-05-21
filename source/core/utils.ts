@@ -20,100 +20,111 @@ namespace SunUtils {
     
 }
 
-interface SoundPacket {
-    readonly x: number;
-    readonly y: number;
-    readonly z: number;
-}
-
-Network.addClientPacket("sfr.anvilsound", (packetData: SoundPacket) => {
+Network.addClientPacket("sfr.anvil", (packetData: Vector) => {
     World.playSound(packetData.x, packetData.y, packetData.z, "random.anvil_land", .1, 1);
 });
+Network.addClientPacket("sfr.levelup", (packetData: Vector) => {
+    World.playSound(packetData.x, packetData.y, packetData.z, "random.levelup", .25, 1.8);
+});
 
-const playAnvilSoundOn = (x: number, y: number, z: number, dimension: number) => {
-    new NetworkConnectedClientList()
-        .setupDistancePolicy(x, y, z, dimension, 64)
-        .send("sfr.anvilsound", {x: x, y: y, z: z} as SoundPacket)
-}
+namespace Sounds {
 
-interface BlockPos extends Vector {
-    readonly dimension: number;
-}
-
-interface BlockPosFace extends BlockPos {
-    readonly side: number;
-    readonly rate: number;
-}
-
-const bpfFromBp = (bp: BlockPos, side: number, rate?: number) => { return {x: bp.x, y: bp.y, z: bp.z, dimension: bp.dimension, side: side, rate: rate ? rate : 1} as BlockPosFace };
-
-const offsetBlockPos = (pos: BlockPos, face: number) => {
-    switch(face){
-        case EBlockSide.NORTH: pos.z -= 1; break;
-        case EBlockSide.SOUTH: pos.z += 1; break;
-        case EBlockSide.EAST: pos.x += 1; break;
-        case EBlockSide.WEST: pos.x -= 1; break;
-        case EBlockSide.UP: pos.y += 1; break;
-        case EBlockSide.DOWN: pos.y -= 1; break;
-        default: throw new java.lang.IllegalArgumentException(`Illegal block face id ${face}`);
+    export function anvil(x: number, y: number, z: number, dimension: number){
+        new NetworkConnectedClientList()
+            .setupDistancePolicy(x, y, z, dimension, 64)
+            .send("sfr.anvil", {x: x, y: y, z: z} as Vector);
     }
-    return pos;
-}
 
-const oppositeFace = (face: number) => {
-    switch(face){
-        case EBlockSide.NORTH: return EBlockSide.SOUTH;
-        case EBlockSide.SOUTH: return EBlockSide.NORTH;
-        case EBlockSide.EAST: return EBlockSide.WEST;
-        case EBlockSide.WEST: return EBlockSide.EAST;
-        case EBlockSide.UP: return EBlockSide.DOWN;
-        case EBlockSide.DOWN: return EBlockSide.UP;
-        default: throw new java.lang.IllegalArgumentException(`Illegal block face id ${face}`);
+    export function levelup(x: number, y: number, z: number, dimension: number){
+        new NetworkConnectedClientList()
+            .setupDistancePolicy(x, y, z, dimension, 64)
+            .send("sfr.levelup", {x: x, y: y, z: z} as Vector);
     }
+
 }
 
-const distanceSqBlockPos = (b1: BlockPos, b2: BlockPos) => Math.pow(b2.x - b1.x, 2) + Math.pow(b2.y - b1.y, 2) + Math.pow(b2.z - b1.z, 2)
-const distanceBlockPos = (b1: BlockPos, b2: BlockPos) => Math.sqrt(distanceSqBlockPos(b1, b2));
+namespace BlockPosUtils {
+    
+    export function BlockPosFaceFromBlockPos(bp: BlockPos, side: number, rate?: number): BlockPosFace {
+        return {x: bp.x, y: bp.y, z: bp.z, dimension: bp.dimension, side: side, rate: rate ?? 1};
+    }
 
-const blockPosFromLong = (serialized: number) => {
-    let pos: BlockPos = {} as BlockPos;
-    JavaMath.fromLong(serialized, pos);
-    return pos;
+    export function offset(pos: BlockPos, face: number): BlockPos {
+        switch(face){
+            case EBlockSide.NORTH: pos.z -= 1; break;
+            case EBlockSide.SOUTH: pos.z += 1; break;
+            case EBlockSide.EAST: pos.x += 1; break;
+            case EBlockSide.WEST: pos.x -= 1; break;
+            case EBlockSide.UP: pos.y += 1; break;
+            case EBlockSide.DOWN: pos.y -= 1; break;
+            default: throw new java.lang.IllegalArgumentException(`Illegal block face id ${face}`);
+        }
+        return pos;
+    }
+
+    export function oppositeFace(face: number): number {
+        switch(face){
+            case EBlockSide.NORTH: return EBlockSide.SOUTH;
+            case EBlockSide.SOUTH: return EBlockSide.NORTH;
+            case EBlockSide.EAST: return EBlockSide.WEST;
+            case EBlockSide.WEST: return EBlockSide.EAST;
+            case EBlockSide.UP: return EBlockSide.DOWN;
+            case EBlockSide.DOWN: return EBlockSide.UP;
+            default: throw new java.lang.IllegalArgumentException(`Illegal block face id ${face}`);
+        }
+    }
+
+    export function distanceSq(b1: BlockPos, b2: BlockPos): number {
+        return Math.pow(b2.x - b1.x, 2) + Math.pow(b2.y - b1.y, 2) + Math.pow(b2.z - b1.z, 2);
+    }
+
+    export function distance(b1: BlockPos, b2: BlockPos): number {
+        return Math.sqrt(distanceSq(b1, b2));
+    }
+
+    export function fromLong(serialized: number): BlockPos {
+        let pos = {} as BlockPos;
+        JavaMath.fromLong(serialized, pos);
+        return pos;
+    }
+
+    export function fromEntity(entity: number): BlockPos {
+        let pos: Vector = Entity.getPosition(entity);
+        return {x: pos.x, y: pos.y, z: pos.z, dimension: Entity.getDimension(entity)};
+    }
+
+    export function fromTile(tile: TileEntity): BlockPos {
+        return {x: tile.x, y: tile.y, z: tile.z, dimension: tile.dimension};
+    }
+
 }
-
-const blockPosFromEntity = (entity: number) => {
-    let pos: Vector = Entity.getPosition(entity);
-    return {x: pos.x, y: pos.y, z: pos.z, dimension: Entity.getDimension(entity)} as BlockPos;
-}
-
-const blockPosFromTile = (tile: TileEntity) => { return {x: tile.x, y: tile.y, z: tile.z, dimension: tile.dimension} as BlockPos }
 
 namespace Traversal {
 
-    export const cache: java.util.List<BlockPos> = new java.util.ArrayList<Vector>();
+    export const cache: java.util.List<BlockPos> = new java.util.ArrayList<BlockPos>();
 
-    export function update(tile: TileEntity): void {
+    export function update(tile: SFRTile.PanelTile): void {
         if(World.getWorldTime() % 20 == 0){
             cache.clear();
-            (tile.data.traversal as java.util.ArrayList<BlockPosFace>).clear();
+            tile.data.traversal.clear();
             cache.add({x: tile.x, y: tile.y, z: tile.z});
             findMachines(tile, cache, tile.data.traversal);
         }
     }
 
-    export function findMachines(tile: TileEntity, cache: java.util.List<BlockPos>, acceptors: java.util.List<BlockPosFace>): void {
+    export function findMachines(tile: SFRTile.PanelTile, cache: java.util.List<BlockPos>, acceptors: java.util.List<BlockPosFace>): void {
         for(let i=0; i<cache.size(); i++){
             let pos: BlockPos = cache.get(i);
             for(let face of [0, 1, 2, 3, 4, 5]){
-                let p: BlockPos = offsetBlockPos(pos, face);
-                if(distanceBlockPos(p, cache.get(0)) > 25) continue;
+                let p: BlockPos = BlockPosUtils.offset(pos, face);
+                if(BlockPosUtils.distance(p, cache.get(0)) > 25) continue;
                 let t: TileEntity = TileEntity.getTileEntity(p.x, p.y, p.z, tile.blockSource);
                 if(t != null && t.isMachine){
                     let e: EnergyTile = t as EnergyTile;
-                    if(e.canReceiveEnergy(oppositeFace(face), "Eu") || e.canReceiveEnergy(oppositeFace(face), "RF") || e.canReceiveEnergy(oppositeFace(face), "FE")){
+                    if(e.canReceiveEnergy(BlockPosUtils.oppositeFace(face), "Eu") || e.canReceiveEnergy(BlockPosUtils.oppositeFace(face), "RF") || e.canReceiveEnergy(BlockPosUtils.oppositeFace(face), "FE")){
                         if(!cache.contains(p)){
                             cache.add(p);
-                            acceptors.add({x: p.x, y: p.y, z: p.z, dimension: p.dimension, side: oppositeFace(face), rate: 1} as BlockPosFace);
+                            acceptors.add({x: p.x, y: p.y, z: p.z, dimension: p.dimension, side: BlockPosUtils.oppositeFace(face), rate: 1} as BlockPosFace);
                         }
                     }
                 }

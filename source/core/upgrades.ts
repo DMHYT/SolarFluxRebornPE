@@ -2,9 +2,9 @@ namespace SolarUpgrades {
 
     export interface UpgradeParams {
         getMaxUpgrades(): number;
-        update?(tile: TileEntity, amount: number, extra?: ItemExtraData): void;
-        canStayInPanel?(tile: TileEntity, stack: ItemInstance, upgradeInv: ItemContainer): boolean;
-        canInstall?(tile: TileEntity, stack: ItemInstance, upgradeInv: ItemContainer): boolean;
+        update?(tile: SFRTile.PanelTile, amount: number, extra?: ItemExtraData): void;
+        canStayInPanel?(tile: SFRTile.PanelTile, stack: ItemInstance, upgradeInv: ItemContainer): boolean;
+        canInstall?(tile: SFRTile.PanelTile, stack: ItemInstance, upgradeInv: ItemContainer): boolean;
         [key: string]: any;
     }
 

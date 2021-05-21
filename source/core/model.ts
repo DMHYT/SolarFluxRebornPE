@@ -12,9 +12,10 @@ namespace SFRModel {
         for(let key of ALL_POSSIBLE_KEYS) render.addEntry(models[key]).setCondition(conditions[key]);
         BlockRenderer.setStaticICRender(id, -1, render);
         const shape = new ICRender.CollisionShape();
-        const entry = shape.addEntry().addBox(0, 0, 0, 1, 6/16, 1);
+        shape.addEntry().addBox(0, 0, 0, 1, 6/16, 1);
         BlockRenderer.setCustomCollisionShape(id, -1, shape);
         BlockRenderer.setCustomRaycastShape(id, -1, shape);
+        Block.setShape(id, 0, 0, 0, 1, 6/16, 1);
         ItemModel.getFor(id, 0).setModel(models.LONE);
     }
 
@@ -109,15 +110,15 @@ namespace SFRModel {
             this.W = AND(NOT(AND(this.BN, this.BS, this.BE)), this.BW);
             this.ES = AND(NOT(AND(this.BN, this.BW)), this.BE, this.BS);
             this.SW = AND(NOT(AND(this.BN, this.BE)), this.BS, this.BW);
-            this.WN = NOT(this.ES);
-            this.NE = NOT(this.SW);
-            this.NS = AND(NOT(AND(this.BE, this.BW)), this.BN, this.NS);
-            this.EW = NOT(this.NS);
+            this.WN = AND(NOT(AND(this.BE, this.BS)), this.BW, this.BN);
+            this.NE = AND(NOT(AND(this.BS, this.BW)), this.BE, this.BN);
+            this.NS = AND(NOT(AND(this.BE, this.BW)), this.BN, this.BS);
+            this.EW = AND(NOT(AND(this.BN, this.BS)), this.BE, this.BW);
             this.NES = AND(NOT(this.BW), this.BN, this.BE, this.BS);
             this.ESW = AND(NOT(this.BN), this.BE, this.BS, this.BW);
-            this.SWN = NOT(this.NES);
-            this.WNE = NOT(this.ESW);
-            this.ALL = NOT(this.LONE);
+            this.SWN = AND(NOT(this.BE), this.BS, this.BW, this.BN);
+            this.WNE = AND(NOT(this.BS), this.BW, this.BN, this.BE);
+            this.ALL = AND(this.BN, this.BS, this.BE, this.BW);
         }
 
         public readonly LONE: ICRender.CONDITION;
