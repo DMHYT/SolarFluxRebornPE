@@ -3,7 +3,7 @@ namespace SFRTile {
     type UpgradeMap = {[id: number]: number};
     type ExtraMap = {[id: number]: ItemExtraData};
     interface DefaultValues {
-        energy: number, canSeeSky: boolean, sunIntensity: number, generation: number, finalGeneration: number, transfer: number,
+        energy: number, canSeeSky: boolean, sunIntensity: number, generation: number, finalGeneration: number, transfer: number, isDestroyed: boolean,
         capacity: number, upgradeMap: UpgradeMap, extraMap: ExtraMap, isTraversalEnabled: boolean, traversal: java.util.ArrayList<BlockPosFace>
     }
 
@@ -16,6 +16,7 @@ namespace SFRTile {
         public networkData: SyncedNetworkData; public networkEntity: NetworkEntity; public sendResponse(name: string, data: object){return};
         // --- --- --- ---- --- ---- --- --- --- //
 
+        public readonly blockID: number;
         public readonly x: number;
         public readonly y: number;
         public readonly z: number;
@@ -39,7 +40,8 @@ namespace SFRTile {
             upgradeMap: {} as UpgradeMap,
             extraMap: {} as ExtraMap,
             isTraversalEnabled: false,
-            traversal: new java.util.ArrayList<BlockPosFace>()
+            traversal: new java.util.ArrayList<BlockPosFace>(),
+            isDestroyed: false
         }
         public data: DefaultValues = this.defaultValues;
 
@@ -98,13 +100,13 @@ namespace SFRTile {
         }
 
         public updateGenerationWithSunIntensity(){
-            if(!this.data.canSeeSky) return 0;
+            if(!this.data.canSeeSky) return this.data.sunIntensity = 0;
             let celestialAngleRadians = SunUtils.getCelestialAngleRadians(1);
             if(celestialAngleRadians > Math.PI) celestialAngleRadians = 2 * Math.PI - celestialAngleRadians;
             let lowLightCount = 0, multiplicator = 1.5 - (lowLightCount * .122), displacement = 1.2 + (lowLightCount * .08);
             this.data.sunIntensity = clamp(multiplicator * Math.cos(celestialAngleRadians / displacement), 0, 1);
             this.data.finalGeneration = this.data.generation * this.data.sunIntensity;
-            this.container.setText("textEfficiency", java.lang.String.format(Translation.translate("sfr.efficiency"), [Math.round(this.data.sunIntensity * 100)]));
+            this.container.setText("textEfficiency", java.lang.String.format(Translation.translate("sfr.efficiency"), [java.lang.Integer.valueOf(Math.round(this.data.sunIntensity * 100))]));
             this.container.setScale("sunBarScale", this.data.sunIntensity);
             this.container.sendChanges();
         }
@@ -143,10 +145,12 @@ namespace SFRTile {
             if(World.getThreadTime() % 20 == 0) this.data.canSeeSky = this.blockSource.canSeeSky(this.x, this.y + 1, this.z);
             if(World.getThreadTime() % 200 == 0) this.updateGenerationWithSunIntensity();
             this.data.energy = Math.min(this.data.energy + this.data.finalGeneration, this.data.capacity);
-            let chargingItem = this.container.getSlot("slotCharge"),
-                type = ChargeItemRegistry.getItemData(chargingItem.id).energy,
-                ratio = EnergyTypeRegistry.getValueRatio("FE", type);
-            this.data.energy -= Math.round(ChargeItemRegistry.addEnergyToSlot(chargingItem, type, Math.round(this.data.energy * ratio), 1) * ratio);
+            let chargingItem = this.container.getSlot("slotCharge");
+            if(chargingItem.id != 0 && ChargeItemRegistry.getItemData(chargingItem.id)){
+                let type = ChargeItemRegistry.getItemData(chargingItem.id).energy,
+                    ratio = EnergyTypeRegistry.getValueRatio("FE", type);
+                this.data.energy -= Math.round(ChargeItemRegistry.addEnergyToSlot(chargingItem, type, Math.round(this.data.energy * ratio), 1) * ratio);
+            }
             this.container.setText("textCharge", java.lang.String.format(Translation.translate("sfr.charge"), [numberWithCommas(this.data.energy)]));
             this.container.setText("textCapacity", java.lang.String.format(Translation.translate("sfr.capacity"), [numberWithCommas(this.data.capacity)]));
             this.container.setText("textGeneration", java.lang.String.format(Translation.translate("sfr.generation"), [numberWithCommas(this.data.finalGeneration)]));
@@ -183,6 +187,10 @@ namespace SFRTile {
                 let carried = Entity.getCarriedItem(player);
                 if(carried.count > 0 && SolarUpgrades.isUpgrade(carried.id)) this.tryPutUpgrades(id, count, data, extra, player, new PlayerActor(player).getSelectedSlot(), false);
             } else this.container.openFor(Network.getClientForPlayer(player), "main");
+        }
+
+        public destroy(){
+            return !this.data.isDestroyed;
         }
 
         constructor(id: string){
