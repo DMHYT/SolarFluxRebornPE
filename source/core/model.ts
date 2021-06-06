@@ -19,11 +19,7 @@ namespace SFRModel {
         ItemModel.getFor(id, 0).setModel(models.LONE);
     }
 
-    export type IConnectionsTyped<T> = {
-        [key in ALL_POSSIBLE]: T;
-    }
-
-    export class PanelModel implements IConnectionsTyped<BlockRenderer.Model> {
+    export class PanelModel {
 
         public static createPanelModel(baseTexture: string, topTexture: string, connectionCubes: PanelModel.ConnectionCube[]): BlockRenderer.Model {
             const model = new BlockRenderer.Model();
@@ -91,7 +87,7 @@ namespace SFRModel {
 
     }
     
-    export class RenderCondition implements IConnectionsTyped<ICRender.CONDITION> {
+    export class RenderCondition {
 
         public readonly BN: ICRender.CONDITION;
         public readonly BS: ICRender.CONDITION;

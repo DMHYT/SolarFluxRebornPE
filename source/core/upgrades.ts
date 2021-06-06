@@ -5,13 +5,12 @@ namespace SolarUpgrades {
         update?(tile: SFRTile.PanelTile, amount: number, extra?: ItemExtraData): void;
         canStayInPanel?(tile: SFRTile.PanelTile, stack: ItemInstance, upgradeInv: ItemContainer): boolean;
         canInstall?(tile: SFRTile.PanelTile, stack: ItemInstance, upgradeInv: ItemContainer): boolean;
-        [key: string]: any;
     }
 
     export const upgrades: {[key: number]: UpgradeParams} = {};
     
     export function registerUpgrade(id: number, params: UpgradeParams): void {
-        params.update ??= () => {return};
+        params.update ??= () => void 0;
         params.canStayInPanel ??= () => true;
         params.canInstall ??= () => true;
         upgrades[id] = params;

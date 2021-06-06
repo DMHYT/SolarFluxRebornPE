@@ -18,13 +18,10 @@ const createPanel = (name: string) => {
         let r = coords.relative;
         region.setBlock(r.x, r.y, r.z, BlockID[name], 0);
         TileEntity.addTileEntity(r.x, r.y, r.z, region);
-        if(item.extra != null && item.extra.getInt("SFREnergy", -1) != -1){
+        if(item.extra != null && item.extra.getLong("SFREnergy", -1) != -1){
             let panel = TileEntity.getTileEntity(r.x, r.y, r.z) as SFRTile.PanelTile;
             panel.data.energy = Math.min(panel.data.energy + item.extra.getInt("SFREnergy", panel.data.capacity));
         }
     });
-    EnergyTileRegistry.addEnergyTypeForId(BlockID[name], FE);
-    EnergyTileRegistry.addEnergyTypeForId(BlockID[name], EU);
-    EnergyTileRegistry.addEnergyTypeForId(BlockID[name], RF);
     SFR_STUFF.push(BlockID[name]);
 }

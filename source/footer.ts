@@ -47,28 +47,36 @@ Item.registerUseFunction(ItemID.sfr_u_blockcharging, (coords, item, block, playe
 
 SolarUpgrades.registerUpgrade(ItemID.sfr_u_blockcharging, {
     getMaxUpgrades: () => 1,
-    canInstall: (tile, stack) => 
-        stack.extra !== null && 
-        stack.extra.getLong("Pos", null) !== null && 
-        stack.extra.getInt("Face", null) !== null && 
-        (stack.extra.getInt("Dim", null) == null || 
-        tile.dimension == stack.extra.getInt("Dim")) && 
-        BlockPosUtils.distanceSq(BlockPosUtils.fromTile(tile), BlockPosUtils.fromLong(stack.extra.getLong("Pos"))) <= 256 &&
-        (tile.isMachine ? 
-            ((tile as EnergyTile).canReceiveEnergy(stack.extra.getInt("Face"), "Eu") ||
-            (tile as EnergyTile).canReceiveEnergy(stack.extra.getInt("Face"), "RF") ||
-            (tile as EnergyTile).canReceiveEnergy(stack.extra.getInt("Face"), "FE")) : false ),
-    canStayInPanel: (tile, stack) => 
-        stack.extra !== null && 
-        stack.extra.getLong("Pos", null) !== null && 
-        stack.extra.getInt("Face", null) !== null && 
-        (stack.extra.getInt("Dim", null) == null || 
-        tile.dimension == stack.extra.getInt("Dim")) && 
-        BlockPosUtils.distanceSq(BlockPosUtils.fromTile(tile), BlockPosUtils.fromLong(stack.extra.getLong("Pos"))) <= 256 &&
-        (tile.isMachine ? 
-            ((tile as EnergyTile).canReceiveEnergy(stack.extra.getInt("Face"), "Eu") ||
-            (tile as EnergyTile).canReceiveEnergy(stack.extra.getInt("Face"), "RF") ||
-            (tile as EnergyTile).canReceiveEnergy(stack.extra.getInt("Face"), "FE")) : false ),
+    canInstall: (tile, stack) => {
+        if(stack.extra !== null && stack.extra.getLong("Pos", null) !== null && stack.extra.getInt("Face", null) && stack.extra.getInt("Dim", null) !== null && tile.dimension == stack.extra.getInt("Dim")){
+            let tilePos = BlockPosUtils.fromTile(tile), otherTilePos = BlockPosUtils.fromLong(stack.extra.getLong("Pos"));
+            if(BlockPosUtils.distanceSq(tilePos, otherTilePos) <= 256){
+                let otherTile = TileEntity.getTileEntity(otherTilePos.x, otherTilePos.y, otherTilePos.z, tile.blockSource);
+                if(otherTile.isEnergyTile){
+                    let etile = otherTile as EnergyTile;
+                    return etile.canReceiveEnergy(stack.extra.getInt("Face"), "Eu") ||
+                           etile.canReceiveEnergy(stack.extra.getInt("Face"), "RF") ||
+                           etile.canReceiveEnergy(stack.extra.getInt("Face"), "FE")
+                }
+            }
+        }
+        return false;
+    },
+    canStayInPanel: (tile, stack) => {
+        if(stack.extra !== null && stack.extra.getLong("Pos", null) !== null && stack.extra.getInt("Face", null) && stack.extra.getInt("Dim", null) !== null && tile.dimension == stack.extra.getInt("Dim")){
+            let tilePos = BlockPosUtils.fromTile(tile), otherTilePos = BlockPosUtils.fromLong(stack.extra.getLong("Pos"));
+            if(BlockPosUtils.distanceSq(tilePos, otherTilePos) <= 256){
+                let otherTile = TileEntity.getTileEntity(otherTilePos.x, otherTilePos.y, otherTilePos.z, tile.blockSource);
+                if(otherTile.isEnergyTile){
+                    let etile = otherTile as EnergyTile;
+                    return etile.canReceiveEnergy(stack.extra.getInt("Face"), "Eu") ||
+                           etile.canReceiveEnergy(stack.extra.getInt("Face"), "RF") ||
+                           etile.canReceiveEnergy(stack.extra.getInt("Face"), "FE")
+                }
+            }
+        }
+        return false;
+    },
     update: (tile, amount, extra) => {
         if(World.getWorldTime() % 20 == 0){
             let pos: BlockPos = BlockPosUtils.fromLong(extra.getLong("Pos"));

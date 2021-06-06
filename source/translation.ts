@@ -1,10 +1,11 @@
-Translation.addTranslation("sfr.itemgroup", {en: "Solar Flux Reborn PE", ru: "Solar Flux Reborn PE"})
-Translation.addTranslation("sfr.charge", {en: "Charge: %s RF", ru: "Хранится: %s RF"});
-Translation.addTranslation("sfr.charge2", {en: "Charge: %s/%s RF", ru: "Хранится: %s/%s RF"});
-Translation.addTranslation("sfr.capacity", {en: "Capacity: %s RF", ru: "Ёмкость: %s RF"});
-Translation.addTranslation("sfr.generation", {en: "Generation: %s RF/t", ru: "Генерация: %s RF/тик"});
-Translation.addTranslation("sfr.efficiency", {en: "Efficiency: %d%%", ru: "Эффективность: %d%%"});
-Translation.addTranslation("sfr.transfer", {en: "Transfer: %s RF/t", ru: "Передача: %s RF/тик"});
+Translation.addTranslation("sfr.itemgroup", {en: "Solar Flux Reborn PE", ru: "Solar Flux Reborn PE"});
+
+Translation.addTranslation("info.sfr.energy.stored1", {en: "Stored: %,d FE", ru: "Хранится: %,d FE"});
+Translation.addTranslation("info.sfr.energy.stored2", {en: "Stored: %,d/%,d FE", ru: "Хранится: %,d/%,d FE"});
+Translation.addTranslation("info.sfr.energy.generation", {en: "Generation: %,d FE/tick", ru: "Генерация: %,d FE/тик"});
+Translation.addTranslation("info.sfr.energy.transfer", {en: "Transfer: %,d FE/tick", ru: "Передача: %,d FE/тик"});
+Translation.addTranslation("info.sfr.energy.capacity", {en: "Capacity: %,d FE", ru: "Ёмкость: %,d FE"});
+Translation.addTranslation("info.sfr.energy.efficiency", {en: "Efficiency: %,d%%", ru: "Эффективность: %,d%%"});
 Translation.addTranslation("sfr.inventory", {en: "Inventory", ru: "Инвентарь"});
 Translation.addTranslation("sfr_blank", {en: "Blank Upgrade", ru: "Шаблон улучшения"});
 Translation.addTranslation("sfr_u_blockcharging", {en: "Block Charging Upgrade", ru: "Улучшение: Зарядка блока"});
