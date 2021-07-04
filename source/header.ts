@@ -1,26 +1,34 @@
 /*
-
  ██████╗ █████╗ ██╗      █████╗ ██████╗     ███████╗██╗     ██╗   ██╗██╗  ██╗
 ██╔════╝██╔══██╗██║     ██╔══██╗██╔══██╗    ██╔════╝██║     ██║   ██║╚██╗██╔╝
 ╚█████╗ ██║  ██║██║     ███████║██████╔╝    █████╗  ██║     ██║   ██║ ╚███╔╝ 
  ╚═══██╗██║  ██║██║     ██╔══██║██╔══██╗    ██╔══╝  ██║     ██║   ██║ ██╔██╗ 
 ██████╔╝╚█████╔╝███████╗██║  ██║██║  ██║    ██║     ███████╗╚██████╔╝██╔╝╚██╗
 ╚═════╝  ╚════╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝    ╚═╝     ╚══════╝ ╚═════╝ ╚═╝  ╚═╝
-   ██████╗ ███████╗██████╗  █████╗ ██████╗ ███╗  ██╗     ██████╗ ███████╗
-   ██╔══██╗██╔════╝██╔══██╗██╔══██╗██╔══██╗████╗ ██║     ██╔══██╗██╔════╝
-   ██████╔╝█████╗  ██████╦╝██║  ██║██████╔╝██╔██╗██║     ██████╔╝█████╗  
-   ██╔══██╗██╔══╝  ██╔══██╗██║  ██║██╔══██╗██║╚████║     ██╔═══╝ ██╔══╝  
-   ██║  ██║███████╗██████╦╝╚█████╔╝██║  ██║██║ ╚███║     ██║     ███████╗
-   ╚═╝  ╚═╝╚══════╝╚═════╝  ╚════╝ ╚═╝  ╚═╝╚═╝  ╚══╝     ╚═╝     ╚══════╝
-
+    ██████╗ ███████╗██████╗  █████╗ ██████╗ ███╗  ██╗    ██████╗ ███████╗
+    ██╔══██╗██╔════╝██╔══██╗██╔══██╗██╔══██╗████╗ ██║    ██╔══██╗██╔════╝
+    ██████╔╝█████╗  ██████╦╝██║  ██║██████╔╝██╔██╗██║    ██████╦╝█████╗  
+    ██╔══██╗██╔══╝  ██╔══██╗██║  ██║██╔══██╗██║╚████║    ██╔══██╗██╔══╝  
+    ██║  ██║███████╗██████╦╝╚█████╔╝██║  ██║██║ ╚███║    ██████╦╝███████╗
+    ╚═╝  ╚═╝╚══════╝╚═════╝  ╚════╝ ╚═╝  ╚═╝╚═╝  ╚══╝    ╚═════╝ ╚══════╝
 */
 
-// © vstannumdum 2021
-// YouTube DMH (Russian)
-// YouTube vstannumdum (English)
+// OFFICIAL PORT OF THE SOLAR FLUX REBORN MOD
+// FROM MINECRAFT FORGE TO INNER CORE MOD LAUNCHER
+
+// © vsdum 2021
+// YouTube DMH (Russian) - https://www.youtube.com/channel/UCdQKuakM3rnuGV_1VA6XUKQ
+// YouTube vstannumdum (English) - https://www.youtube.com/channel/UCXHpQ_SQ8VPigIvbbzHWWdA
 // My VK - https://www.vk.com/vstannumdum
 // Report bugs in VK Public - https://www.vk.com/dmhmods
-// Original Forge mod by Zeitheron and DragonForgeMC
+
+// Original Forge mod by Zeitheron
+// https://www.curseforge.com/minecraft/mc-mods/solar-flux-reborn
+// https://www.curseforge.com/members/zeitheron/projects
+// https://www.youtube.com/c/ZeitheronRowdan
+// https://twitter.com/Zeitheron
+// https://www.vk.com/zeitheron
+// https://www.patreon.com/zeitheron
 
 IMPORT("EnergyNet");
 IMPORT("StorageInterface");
@@ -45,12 +53,10 @@ const getStatsFor = (id: string) => {
         generation: __config__.getNumber(`panel_stats.${id}.generation`).longValue(),
         transfer: __config__.getNumber(`panel_stats.${id}.capacity`).longValue(),
         capacity: __config__.getNumber(`panel_stats.${id}.capacity`).longValue()
-    } as PanelStats
+    } as PanelStats;
 }
 
-const FE: EnergyType = EnergyTypeRegistry.assureEnergyType("FE", 0.25);
-const EU: EnergyType = EnergyTypeRegistry.assureEnergyType("Eu", 1);
-const RF: EnergyType = EnergyTypeRegistry.assureEnergyType("RF", 0.25);
+EnergyTypeRegistry.assureEnergyType("FE", 0.25);
 
 // Array of all items and blocks in the mod for the creative group
 const SFR_STUFF: number[] = [];
@@ -68,11 +74,11 @@ const addShaped = (id: number, count: number, data: number, mask: string[], keys
 const HORIZONTAL_FACES: number[] = [2, 3, 4, 5];
 const ALL_FACES: number[] = [0, 1, 2, 3, 4, 5];
 
-var _inventory_open = false;
-Callback.addCallback("NativeGuiChanged", (screenName) => {
-    if(screenName == "inventory_screen" || screenName == "inventory_screen_pocket") _inventory_open = true;
-    else _inventory_open = false;
-});
+// var _inventory_open = false;
+// Callback.addCallback("NativeGuiChanged", (screenName) => {
+//     if(screenName == "inventory_screen" || screenName == "inventory_screen_pocket") _inventory_open = true;
+//     else _inventory_open = false;
+// });
 
 // const panel_tip = (id: number) => {
 //     Callback.addCallback("PostLoaded", () => {

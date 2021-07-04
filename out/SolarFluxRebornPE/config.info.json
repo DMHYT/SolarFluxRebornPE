@@ -1,0 +1,34 @@
+{
+    "description": {
+        "en": "This is a configuration of Solar Flux Reborn mod",
+        "ru": "Это конфигурация мода Solar Flux Reborn"
+    },
+    "properties": {
+        "sun_intensity_update_interval": {
+            "name": {
+                "en": "Sun Intensity Update Interval",
+                "ru": "Интервал между обновлениями яркости солнца"
+            },
+            "description": {
+                "en": "Interval in ticks, between which solar panels will update sun intensity value. Setting too small interval can cause big lags.",
+                "ru": "Интервал в тиках, между которым солнечные панели будут обновлять значение яркости солнца. Установка слишком маленького интервала может вызвать большие лаги."
+            },
+            "type": "SeekBar",
+            "min": 1,
+            "max": 200,
+            "displayIf": "enabled"
+        },
+        "panel_stats": {
+            "name": {
+                "en": "Panel Stats",
+                "ru": "Характеристики панелей"
+            },
+            "description": {
+                "en": "Here you can customize generation, transfer and capacity values of each panel. You should better change these values directly in config.json file, to see large values in more readable format.",
+                "ru": "Здесь вы можете настроить значения генерации, передачи и ёмкости каждой панели. Лучше изменять эти значения прямо в файле config.json, чтобы видеть большие значения в более читабельном формате."
+            },
+            "collapsible": true,
+            "displayIf": "enabled"
+        }
+    }
+}

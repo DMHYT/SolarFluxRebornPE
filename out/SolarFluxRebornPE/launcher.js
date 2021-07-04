@@ -1,1 +1,1 @@
-ConfigureMultiplayer({name: "SolarFluxRebornPE",version: "1.0",isClientOnly: false});Launch();
+ConfigureMultiplayer({name: "SolarFluxRebornBE",version: "1.0",isClientOnly: false});Launch();

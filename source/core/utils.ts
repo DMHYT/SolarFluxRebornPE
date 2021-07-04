@@ -46,7 +46,7 @@ namespace Sounds {
 namespace BlockPosUtils {
     
     export function BlockPosFaceFromBlockPos(bp: BlockPos, side: number, rate?: number): BlockPosFace {
-        return {x: bp.x, y: bp.y, z: bp.z, dimension: bp.dimension, side: side, rate: rate ?? 1};
+        return {...bp, side: side, rate: rate ?? 1};
     }
 
     export function offset(pos: BlockPos, face: number): BlockPos {
@@ -90,41 +90,44 @@ namespace BlockPosUtils {
 
     export function fromEntity(entity: number): BlockPos {
         let pos: Vector = Entity.getPosition(entity);
-        return {x: pos.x, y: pos.y, z: pos.z, dimension: Entity.getDimension(entity)};
+        return { ...pos, dimension: Entity.getDimension(entity) };
     }
 
     export function fromTile(tile: TileEntity): BlockPos {
-        return {x: tile.x, y: tile.y, z: tile.z, dimension: tile.dimension};
+        return { ...tile } as BlockPos;
     }
 
 }
 
 namespace Traversal {
 
-    export const cache: java.util.List<BlockPos> = new java.util.ArrayList<BlockPos>();
+    export var cache: BlockPos[] = [];
 
     export function update(tile: SFRTile.PanelTile): void {
         if(World.getWorldTime() % 20 == 0){
-            cache.clear();
-            tile.data.traversal.clear();
-            cache.add({x: tile.x, y: tile.y, z: tile.z});
+            cache = [];
+            tile.data.traversal = [];
+            cache.push({ ...tile } as BlockPos);
             findMachines(tile, cache, tile.data.traversal);
         }
     }
 
-    export function findMachines(tile: SFRTile.PanelTile, cache: java.util.List<BlockPos>, acceptors: java.util.List<BlockPosFace>): void {
-        for(let i=0; i<cache.size(); i++){
-            let pos: BlockPos = cache.get(i);
-            for(let face of [0, 1, 2, 3, 4, 5]){
+    export function findMachines(tile: SFRTile.PanelTile, cache: BlockPos[], acceptors: BlockPosFace[]): void {
+        for(let i=0; i<cache.length; i++){
+            let pos: BlockPos = cache[i];
+            for(let f in ALL_FACES){
+                let face = ALL_FACES[f];
                 let p: BlockPos = BlockPosUtils.offset(pos, face);
-                if(BlockPosUtils.distance(p, cache.get(0)) > 25) continue;
+                if(BlockPosUtils.distance(p, cache[0]) > 25) continue;
                 let t: TileEntity = TileEntity.getTileEntity(p.x, p.y, p.z, tile.blockSource);
-                if(t != null && t.isMachine){
+                if(t != null && t.isMachine && t.blockSource){
                     let e: EnergyTile = t as EnergyTile;
                     if(e.canReceiveEnergy(BlockPosUtils.oppositeFace(face), "Eu") || e.canReceiveEnergy(BlockPosUtils.oppositeFace(face), "RF") || e.canReceiveEnergy(BlockPosUtils.oppositeFace(face), "FE")){
-                        if(!cache.contains(p)){
-                            cache.add(p);
-                            acceptors.add({x: p.x, y: p.y, z: p.z, dimension: p.dimension, side: BlockPosUtils.oppositeFace(face), rate: 1} as BlockPosFace);
+                        if(!!~cache.find((item, index, array) => {
+                            return item.x == p.x && item.y == p.y && item.z == p.z && item.dimension == p.dimension;
+                        })){
+                            cache.push(p);
+                            acceptors.push({ ...p, side: BlockPosUtils.oppositeFace(face), rate: 1 });
                         }
                     }
                 }

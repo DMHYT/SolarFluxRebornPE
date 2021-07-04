@@ -1,5 +1,6 @@
 {
     "enabled": true,
+    "sun_intensity_update_interval": 100,
     "panel_stats": {
         "sfr_1": {
             "generation": 1,

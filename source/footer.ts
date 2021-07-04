@@ -31,16 +31,18 @@ Item.getItemById("sfr_u_traversal").setMaxStackSize(1);
 Item.addCreativeGroup("sfr", Translation.translate("sfr.itemgroup"), SFR_STUFF);
 
 Item.registerUseFunction(ItemID.sfr_u_blockcharging, (coords, item, block, player) => {
-    let region = BlockSource.getDefaultForActor(player),
-        tile = TileEntity.getTileEntity(coords.x, coords.y, coords.z, region);
-    if(tile != null && tile.isMachine){
-        let etile = tile as EnergyTile;
-        if(etile.canReceiveEnergy(coords.side, "Eu") || etile.canReceiveEnergy(coords.side, "RF") || etile.canReceiveEnergy(coords.side, "FE")){
-            item.extra ??= new ItemExtraData();
-            item.extra.putInt("Dim", region.getDimension());
-            item.extra.putLong("Pos", JavaMath.toLong(coords.x, coords.y, coords.z));
-            item.extra.putInt("Face", coords.side);
-            Sounds.levelup(coords.x, coords.y, coords.z, region.getDimension());
+    if(Entity.getSneaking(player)){
+        let region = BlockSource.getDefaultForActor(player),
+            tile = TileEntity.getTileEntity(coords.x, coords.y, coords.z, region);
+        if(tile != null && tile.isEnergyTile){
+            let etile = tile as EnergyTile;
+            if(etile.canReceiveEnergy(coords.side, "Eu") || etile.canReceiveEnergy(coords.side, "RF") || etile.canReceiveEnergy(coords.side, "FE")){
+                item.extra ??= new ItemExtraData();
+                item.extra.putInt("Dim", region.getDimension());
+                item.extra.putLong("Pos", JavaMath.toLong(coords.x, coords.y, coords.z));
+                item.extra.putInt("Face", coords.side);
+                Sounds.levelup(coords.x, coords.y, coords.z, region.getDimension());
+            }
         }
     }
 });
@@ -83,13 +85,13 @@ SolarUpgrades.registerUpgrade(ItemID.sfr_u_blockcharging, {
             let d: number = BlockPosUtils.distanceSq(BlockPosUtils.fromTile(tile), pos);
             if(d <= 256){
                 d /= 256;
-                tile.traversal.clear();
+                tile.data.traversal = [];
                 if(tile.getUpgrades(ItemID.sfr_u_traversal) > 0){
-                    Traversal.cache.clear();
-                    Traversal.cache.add(pos);
-                    Traversal.findMachines(tile, Traversal.cache, tile.traversal);
+                    Traversal.cache = [];
+                    Traversal.cache.push(pos);
+                    Traversal.findMachines(tile, Traversal.cache, tile.data.traversal);
                 }
-                tile.traversal.add(BlockPosUtils.BlockPosFaceFromBlockPos(pos, extra.getInt("Face"), 1 - d));
+                tile.data.traversal.push(BlockPosUtils.BlockPosFaceFromBlockPos(pos, extra.getInt("Face"), 1 - d));
             }
         }
     }
@@ -124,7 +126,9 @@ SolarUpgrades.registerUpgrade(ItemID.sfr_u_dispersive, {
             }
             return fe;
         }
-        for(let player of tile.blockSource.fetchEntitiesInAABB(tile.x - 16, tile.y - 16, tile.z - 16, tile.x + 16, tile.y + 16, tile.z + 16, EEntityType.PLAYER, false)){
+        let fetch = tile.blockSource.fetchEntitiesInAABB(tile.x - 16, tile.y - 16, tile.z - 16, tile.x + 16, tile.y + 16, tile.z + 16, EEntityType.PLAYER, false);
+        for(let p in fetch){
+            let player = fetch[p];
             let mod: number = Math.max(0, 1 - BlockPosUtils.distanceSq(BlockPosUtils.fromEntity(player), BlockPosUtils.fromTile(tile)) / 256);
             let transfer: number = Math.round(tile.initialTransfer * mod);
             let sent: number = Math.min(Math.round(tile.data.energy * mod), transfer);
