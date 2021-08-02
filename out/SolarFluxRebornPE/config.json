@@ -1,5 +1,6 @@
 {
     "enabled": true,
+    "pickup_energy_loss": 5,
     "sun_intensity_update_interval": 100,
     "panel_stats": {
         "sfr_1": {
@@ -92,5 +93,6 @@
             "transfer": 4096,
             "capacity": 8000000
         }
-    }
+    },
+    "different_panel_height": false
 }

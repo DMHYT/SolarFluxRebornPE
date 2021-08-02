@@ -4,6 +4,21 @@
         "ru": "Это конфигурация мода Solar Flux Reborn"
     },
     "properties": {
+        "pickup_energy_loss": {
+            "name": {
+                "en": "Pickup Energy Loss",
+                "ru": "Потери энергии при ломании"
+            },
+            "description": {
+                "en": "How much energy (percent) will get lost while picking up the solar panel?",
+                "ru": "Сколько энергии (в процентах) потеряет солнечная панель при ломании?"
+            },
+            "type": "SeekBar",
+            "min": 1,
+            "max": 100,
+            "value": 5,
+            "displayIf": "enabled"
+        },
         "sun_intensity_update_interval": {
             "name": {
                 "en": "Sun Intensity Update Interval",
@@ -28,6 +43,17 @@
                 "ru": "Здесь вы можете настроить значения генерации, передачи и ёмкости каждой панели. Лучше изменять эти значения прямо в файле config.json, чтобы видеть большие значения в более читабельном формате."
             },
             "collapsible": true,
+            "displayIf": "enabled"
+        },
+        "different_panel_height": {
+            "name": {
+                "en": "Different Panel Height",
+                "ru": "Разная высота панелей"
+            },
+            "description": {
+                "en": "Every non-custom panel will have different box height depending on its level",
+                "ru": "Каждая некастомная панель будет иметь разную высоту бокса в зависимости от своего уровня"
+            },
             "displayIf": "enabled"
         }
     }

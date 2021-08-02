@@ -11,14 +11,14 @@
     "compileOnSave": false,
     "include": [
         "tools/declarations/*.d.ts",
+        "source/translation.ts",
         "source/header.ts",
         "source/core/upgrades.ts",
         "source/core/utils.ts",
-        "source/core/model.ts",
         "source/core/gui.ts",
         "source/core/tile.ts",
         "source/core/block.ts",
         "source/footer.ts",
-        "source/translation.ts"
+        "source/api.ts"
     ]
 }

@@ -33,6 +33,7 @@
 IMPORT("EnergyNet");
 IMPORT("StorageInterface");
 IMPORT("ChargeItem");
+IMPORT("VanillaSlots");
 
 const JavaMath = new (WRAP_JAVA("ua.vsdum.sfrpe.Main"))();
 
@@ -63,7 +64,7 @@ const SFR_STUFF: number[] = [];
 
 const createItem = (id: string) => {
     IDRegistry.genItemID(`sfr_${id}`);
-    Item.createItem(`sfr_${id}`, `sfr_${id}`, {name: `sfr_${id}`, data: 0}, {stack: 64});
+    Item.createItem(`sfr_${id}`, `item.solarflux:${id}.name`, {name: `${id}`, data: 0}, {stack: 64});
     SFR_STUFF.push(ItemID[`sfr_${id}`]);
 }
 
@@ -72,24 +73,8 @@ const addShaped = (id: number, count: number, data: number, mask: string[], keys
 }
 
 const HORIZONTAL_FACES: number[] = [2, 3, 4, 5];
-const ALL_FACES: number[] = [0, 1, 2, 3, 4, 5];
+const ALL_FACES: number[] = [0, 1, ...HORIZONTAL_FACES];
 
-// var _inventory_open = false;
-// Callback.addCallback("NativeGuiChanged", (screenName) => {
-//     if(screenName == "inventory_screen" || screenName == "inventory_screen_pocket") _inventory_open = true;
-//     else _inventory_open = false;
-// });
-
-// const panel_tip = (id: number) => {
-//     Callback.addCallback("PostLoaded", () => {
-//         Item.registerNameOverrideFunction(id, (item, name) => {
-//             if(_inventory_open){
-
-//             }
-//             if(item.extra != null && item.extra.getLong("SFREnergy", -1) != -1){
-//                 name += "\n" + EColor.YELLOW + java.lang.String.format(Translation.translate(""))
-//             }
-//             return name;
-//         });
-//     });
-// }
+const SUN_INTENSITY_UPDATE_INTERVAL = __config__.getNumber("sun_intensity_update_interval").intValue();
+const PICKUP_ENERGY_LOSS = __config__.getNumber("pickup_energy_loss").intValue(); // TODO change to float when it is fixed in mod manager
+const DIFFERENT_PANEL_HEIGHT = __config__.getBool("different_panel_height");

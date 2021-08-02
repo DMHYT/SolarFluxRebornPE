@@ -94,7 +94,7 @@ namespace BlockPosUtils {
     }
 
     export function fromTile(tile: TileEntity): BlockPos {
-        return { ...tile } as BlockPos;
+        return { x: tile.x, y: tile.y, z: tile.z, dimension: tile.dimension } as BlockPos;
     }
 
 }
