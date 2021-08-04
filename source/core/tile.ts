@@ -216,11 +216,13 @@ namespace SFRTile {
 
         public chargeItem(){
             let slot = this.container.getSlot("slotCharge"),
-                data = ChargeItemRegistry.getItemData(slot.id),
-                type = data.energy,
-                ratio = EnergyTypeRegistry.getValueRatio("FE", type),
-                amount = Math.round(Math.min(this.data.energy, this.data.transfer) * ratio);
-            this.data.energy -= Math.round(ChargeItemRegistry.addEnergyToSlot(slot, type, amount, data.tier, true) / ratio);
+                data = ChargeItemRegistry.getItemData(slot.id);
+            if(typeof data !== "undefined") {
+                let type = data.energy,
+                    ratio = EnergyTypeRegistry.getValueRatio("FE", type),
+                    amount = Math.round(Math.min(this.data.energy, this.data.transfer) * ratio);
+                this.data.energy -= Math.round(ChargeItemRegistry.addEnergyToSlot(slot, type, amount, data.tier, true) / ratio);
+            }
         }
 
         public tick(){
