@@ -20,5 +20,8 @@
         "source/core/block.ts",
         "source/footer.ts",
         "source/api.ts"
+    ],
+    "exclude": [
+        "tools/declarations/SolarFluxAPI.d.ts"
     ]
 }

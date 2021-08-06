@@ -30,18 +30,25 @@ namespace SFRTile {
         public readonly x: number;
         public readonly y: number;
         public readonly z: number;
+        public readonly dimension: number;
 
         constructor(readonly name: string, readonly height: number){}
 
         public updateModel(){
             const render = new ICRender.Model();
             const model = new BlockRenderer.Model();
+            const shape = new ICRender.CollisionShape();
+            const entry = shape.addEntry();
             model.addBox(0, 0, 0, 1, this.height, 1, [[`${this.name}_base`, 0], [`${this.name}_top`, 0], [`${this.name}_base`, 0]]);
+            entry.addBox(0, 0, 0, 1, this.height, 1);
             for(let k in CONNECTION_CUBES){
                 let cube = CONNECTION_CUBES[k];
-                this.networkData.getBoolean(k) && model.addBox(cube[0], this.height, cube[1], cube[2], (this.height + .4) / 16, cube[3], `${this.name}_base`, 0);
+                this.networkData.getBoolean(k) && (
+                    model.addBox(cube[0], this.height, cube[1], cube[2], (this.height + .4) / 16, cube[3], `${this.name}_base`, 0),
+                    entry.addBox(cube[0], this.height, cube[1], cube[2], (this.height + .4) / 16, cube[3]) );
             }
             BlockRenderer.mapAtCoords(this.x, this.y, this.z, render);
+            BlockRenderer.mapCollisionAndRaycastModelAtCoords(this.dimension, this.x, this.y, this.z, shape);
         }
 
         public load(){
@@ -306,7 +313,7 @@ namespace SFRTile {
                 let ratio = EnergyTypeRegistry.getValueRatio("FE", node.receivers[0].baseEnergy),
                     output = Math.round(Math.min(this.data.energy, this.data.transfer) * ratio),
                     amount = Math.min(output, node.receivers[0].maxValue);
-                this.data.energy -= Math.round(node.receivers[0].add(output, amount) / ratio);
+                this.data.energy -= Math.round(node.add(output, amount) / ratio);
             }
         }
 
@@ -328,7 +335,7 @@ namespace SFRTile {
         for(let i in EnergyTypeRegistry.energyTypes)
             EnergyTileRegistry.addEnergyTypeForId(BlockID[id], EnergyTypeRegistry.energyTypes[i] as EnergyType);
         let slots: {[key: string]: SlotData} = {};
-        for(let i=0; i<5; i++) slots[`slotUpgrade${i}`] = {input: true, output: true, isValid: (item) => SolarUpgrades.isUpgrade(item.id)};
+        for(let i=0; i<5; i++) slots[`slotUpgrade${i}`] = {input: true, output: true, isValid: (item, side, tileEntity: PanelTile) => SolarUpgrades.isUpgrade(item.id) && SolarUpgrades.getUpgrade(item.id).canInstall(tileEntity, item, tileEntity.container)};
         slots["slotCharge"] = {input: true, output: true, isValid: (item: ItemInstance) => typeof ChargeItemRegistry.getItemData(item.id) !== "undefined"};
         StorageInterface.createInterface(BlockID[id], { slots: slots });
         VanillaSlots.registerForTile(BlockID[id]);

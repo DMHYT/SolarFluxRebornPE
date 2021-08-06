@@ -14,22 +14,22 @@ const mod_block = (id: string, data?: number) => {
 
 class PanelLanguageBuilder {
 
-    public localizations: {[key: string]: string} = {};
-    public default: string = null;
+    private _localizations: {[key: string]: string} = {};
+    private _default: string = null;
 
     constructor(readonly panel: PanelData) {};
 
     public put(lang: string, localization: string): PanelLanguageBuilder {
         lang = lang.toLowerCase();
-        if(lang == "en_us") this.default = localization;
-        this.localizations[lang] = localization;
+        if(lang == "en_us") this._default = localization;
+        this._localizations[lang] = localization;
         return this;
     }
 
     public build() {
-        if(this.default == null) throw new TypeError("Unable to apply languages: no \'en_us\' value found!");
-        this.localizations[Translation.getLanguage()] ??= this.localizations.en_us;
-        Translation.addTranslation(`tile.solarflux:solar_panel_${this.panel.name}.name`, this.localizations);
+        if(this._default == null) throw new TypeError("Unable to apply languages: no \'en_us\' value found!");
+        this._localizations[Translation.getLanguage()] ??= this._localizations.en_us;
+        Translation.addTranslation(`tile.solarflux:solar_panel_${this.panel.name}.name`, this._localizations);
         return this.panel;
     }
     
@@ -43,9 +43,17 @@ class PanelRecipeBuilder {
 
     constructor(readonly panel: PanelData) {};
 
-    public shape(...args: [string, string?, string?]): PanelRecipeBuilder {
-        if(arguments.length > 3 || args[0].length > 3 || args[1].length > 3 || args[2].length > 3) throw new Error("Recipe shape must be min 1x1 and max 3x3");
-        this._shape = args;
+    public shape(s1: string, s2?: string, s3?: string): PanelRecipeBuilder;
+    public shape(mask: [string, string, string]): PanelRecipeBuilder;
+    public shape(par1: string | [string, string, string], par2?: string, par3?: string): PanelRecipeBuilder {
+        if(typeof par1 === "string") {
+            this._shape = [par1];
+            typeof par2 === "string" && this._shape.push(par2);
+            typeof par3 === "string" && this._shape.push(par3);
+        } else if(Array.isArray(par1)) {
+            if(par1.length > 3 || par1[0].length > 3 || par1[1].length > 3 || par1[2].length > 3) throw new Error("Recipe shape must be min 1x1 and max 3x3");
+            this._shape = par1;
+        }
         return this;
     }
 
@@ -60,13 +68,13 @@ class PanelRecipeBuilder {
         return this;
     }
 
-    public build(): PanelRecipeBuilder;
-    public build(amount: number): PanelRecipeBuilder;
-    public build(amount?: number): PanelRecipeBuilder {
+    public build(): PanelData;
+    public build(amount: number): PanelData;
+    public build(amount?: number): PanelData {
         const keys: (string | number)[] = [];
         for(let k in this._keys) keys.push(k, this._keys[k].id, this._keys[k].data);
         Recipes.addShaped({id: BlockID[`sfr_${this.panel.name}`], count: amount ?? 1, data: 0}, this._shape, keys, this._func ?? (() => {}));
-        return this;
+        return this.panel;
     }
 
 }
@@ -125,7 +133,7 @@ class PanelBuilder {
         if(this._generation == null) throw new TypeError("generation == null");
         if(this._capacity == null) throw new TypeError("capacity == null");
         if(this._transfer == null) throw new TypeError("transfer == null");
-        createPanelFromStats(this._name, this._height, this._generation, this._capacity, this._transfer);
+        SolarPanel.createPanelFromStats(this._name, this._height, this._generation, this._capacity, this._transfer);
         return new PanelData(this._name);
     }
 

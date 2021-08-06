@@ -22,7 +22,7 @@ const createSolarGuiFor = (header: string) => {
                 slotCharge: {type: "slot", x: 640, y: offset + 20, bitmap: "sfr.charge_slot", size: 45, isValid: (id) => typeof ChargeItemRegistry.getItemData(id) !== "undefined", visual: false},
                 closeButton: {type: "closeButton", bitmap: "classic_close_button", bitmap2: "classic_close_button_down", scale: 3, x: 710, y: offset}
             }
-            for(let i=0; i<5; i++) result[`slotUpgrade${i}`] = {type: "slot", x: 320 + 45 * i, y: offset + 140, size: 45, isValid: (id) => SolarUpgrades.isUpgrade(id), visual: false};
+            for(let i=0; i<5; i++) result[`slotUpgrade${i}`] = {type: "slot", x: 320 + 45 * i, y: offset + 140, size: 45, isValid: (id, count, data, container, item) => SolarUpgrades.isUpgrade(id) && SolarUpgrades.getUpgrade(id).canInstall(container.getParent(), item, new ItemContainer(container)), visual: false};
             for(let i=0; i<9; i++) result[`invSlot${i}`] = {type: "invSlot", x: 293 + 45 * i, y: offset + 386, size: 45, index: i};
             for(let i=9; i<36; i++) result[`invSlot${i}`] = {type: "invSlot", x: 293 + 45 * (i % 9), y: offset + 196 + Math.floor(i / 9) * 45, size: 45, index: i};
             return result;
