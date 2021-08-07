@@ -11,7 +11,7 @@
         }
     }
     let files = FileTools.GetListOfFiles(`${__dir__}/res/lang/`, "");
-    for (let i in files) readFile(new java.lang.String(files[i].getName()).replaceFirst("[.][^.]+$", ""));
+    for (let i in files) readFile(new JavaString(files[i].getName()).replaceFirst("[.][^.]+$", ""));
     for (let key in all_translation_keys) {
         all_translation_keys[key][Translation.getLanguage()] ??= all_translation_keys[key].en;
         Translation.addTranslation(key, all_translation_keys[key]);

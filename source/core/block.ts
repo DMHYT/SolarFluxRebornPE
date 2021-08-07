@@ -1,27 +1,46 @@
 namespace SolarPanel {
 
+    const NOT = ICRender.NOT;
+    const AND = ICRender.AND;
+    const OR = ICRender.OR;
+    const BLOCK = ICRender.BLOCK;
+
     export function setupModelFor(name: string, height: number): void {
         ICRender.getGroup("ic-wire").add(BlockID[`sfr_${name}`], -1);
         ICRender.getGroup("rf-wire").add(BlockID[`sfr_${name}`], -1);
         const render = new ICRender.Model();
-        const model = new BlockRenderer.Model();
-        model.addBox(0, 0, 0, 1, height, 1, [[`sfr_${name}_base`, 0], [`sfr_${name}_top`, 0], [`sfr_${name}_base`, 0]]);
-        model.addBox(0, height, 0, 1, (height + .4) / 16, 1/16, `sfr_${name}_base`, 0);
-        model.addBox(0, height, 15/16, 1, (height + .4) / 16, 1, `sfr_${name}_base`, 0);
-        model.addBox(0, height, 1/16, 1/16, (height + .4) / 16, 15/16, `sfr_${name}_base`, 0);
-        model.addBox(15/16, height, 1/16, 1, (height + .4) / 16, 15/16, `sfr_${name}_base`, 0);
-        render.addEntry(model);
-        BlockRenderer.setStaticICRender(BlockID[`sfr_${name}`], -1, render);
-        ItemModel.getFor(BlockID[`sfr_${name}`], -1).setModel(render);
-        BlockRenderer.enableCoordMapping(BlockID[`sfr_${name}`], -1, render);
+        const main_cube = new BlockRenderer.Model();
+        const group = ICRender.getGroup(`sfr_${name}`);
+        group.add(BlockID[`sfr_${name}`], -1);
+        main_cube.addBox(0, 0, 0, 1, height, 1, [[`sfr_${name}_base`, 0], [`sfr_${name}_top`, 0], [`sfr_${name}_base`, 0]]);
+        render.addEntry(main_cube);
         const shape = new ICRender.CollisionShape();
-        shape.addEntry()
-            .addBox(0, 0, 0, 1, height, 1)
-            .addBox(0, height, 0, 1, (height + .4) / 16, 1/16)
-            .addBox(0, height, 15/16, 1, (height + .4) / 16, 1)
-            .addBox(0, height, 1/16, 1/16, (height + .4) / 16, 15/16)
-            .addBox(15/16, height, 1/16, 1, (height + .4) / 16, 15/16);
+        shape.addEntry().addBox(0, 0, 0, 1, height, 1);
+        const N = BLOCK(0, 0, -1, group, false);
+        const S = BLOCK(0, 0, 1, group, false);
+        const E = BLOCK(-1, 0, 0, group, false);
+        const W = BLOCK(1, 0, 0, group, false);
+        const boxes: {box: [number, number, number, number], condition: ICRender.CONDITION}[] = [
+      /*N*/ {box: [1/16, 0, 15/16, 1/16], condition: NOT(N)},
+      /*S*/ {box: [1/16, 15/16, 15/16, 1], condition: NOT(S)},
+      /*E*/ {box: [15/16, 1/16, 1, 15/16], condition: NOT(E)},
+      /*W*/ {box: [0, 1/16, 1/16, 15/16], condition: NOT(W)},
+     /*NE*/ {box: [15/16, 0, 1, 1/16], condition: OR(AND(NOT(N), NOT(E)), AND(NOT(N), E), AND(N, NOT(E)))},
+     /*NW*/ {box: [0, 0, 1/16, 1/16], condition: OR(AND(NOT(N), NOT(W)), AND(NOT(N), W), AND(N, NOT(W)))},
+     /*SE*/ {box: [15/16, 15/16, 1, 1], condition: OR(AND(NOT(S), NOT(E)), AND(NOT(S), E), AND(S, NOT(E)))},
+     /*SW*/ {box: [0, 15/16, 1/16, 1], condition: OR(AND(NOT(S), NOT(W)), AND(NOT(S), W), AND(S, NOT(W)))}
+        ]
+        for(let i in boxes) {
+            const box = boxes[i];
+            const part = new BlockRenderer.Model();
+            part.addBox(box.box[0], height, box.box[1], box.box[2], height + 0.4 / 16, box.box[3], [[`sfr_${name}_base`, 0]]);
+            render.addEntry(part).setCondition(box.condition);
+            shape.addEntry().addBox(box.box[0], height, box.box[1], box.box[2], height + 0.4 / 16, box.box[3]).setCondition(box.condition);
+        }
+        Block.setShape(BlockID[`sfr_${name}`], 0, 0, 0, 1, height, 1);
+        BlockRenderer.setStaticICRender(BlockID[`sfr_${name}`], -1, render);
         BlockRenderer.setCustomCollisionAndRaycastShape(BlockID[`sfr_${name}`], -1, shape);
+        ItemModel.getFor(BlockID[`sfr_${name}`], -1).setModel(render);
     }
 
     export function createPanelFromStats(name: string, height: number, generation: number, capacity: number, transfer: number): void {
@@ -48,15 +67,10 @@ namespace SolarPanel {
                 panel.data.energy = Math.min(panel.data.energy + item.extra.getInt("SFREnergy", panel.data.capacity));
             }
         });
-        Block.registerNeighbourChangeFunction(BlockID[`sfr_${name}`], (coords, block, changed, region) => {
-            changed.y == coords.y &&
-            region.getBlockId(changed.x, changed.y, changed.z) == BlockID[`sfr_${name}`] &&
-            (TileEntity.getTileEntity(coords.x, coords.y, coords.z) as SFRTile.PanelTile).updateConnectionCubes();
-        });
         Item.registerNameOverrideFunction(BlockID[`sfr_${name}`], (item, name) => {
-            if(item.extra !== null && item.extra.getLong("SFREnergy", -1) != -1)
-                name += `\n${EColor.GRAY}${java.lang.String.format("info.solarflux.energy.stored2", [java.lang.Long.valueOf(item.extra.getLong("SFREnergy")), java.lang.Long.valueOf(getStatsFor(`sfr_${name}`).capacity)])}`
-            return name;
+            if(item.extra == null) return name;
+            if(item.extra.getLong("SFREnergy", -1) == -1) return name;
+            return `${name}\n§7${JavaString.format(Translation.translate("info.solarflux.energy.stored2"), [Long.valueOf(item.extra.getLong("SFREnergy")), Long.valueOf(getStatsFor(`sfr_${name}`).capacity)])}`
         });
         SFR_STUFF.push(BlockID[`sfr_${name}`]);
     }

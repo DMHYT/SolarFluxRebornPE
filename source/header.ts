@@ -39,10 +39,6 @@ const JavaMath = new (WRAP_JAVA("ua.vsdum.sfrpe.Main"))();
 
 const clamp = (num: number, min: number, max: number) => num < min ? min : (num > max ? max : num);
 
-const BLOCK = ICRender.BLOCK;
-const AND = ICRender.AND;
-const NOT = ICRender.NOT;
-
 interface PanelStats {
     generation: number;
     transfer: number;
@@ -52,7 +48,7 @@ interface PanelStats {
 const getStatsFor = (id: string) => {
     return {
         generation: __config__.getNumber(`panel_stats.${id}.generation`).longValue(),
-        transfer: __config__.getNumber(`panel_stats.${id}.capacity`).longValue(),
+        transfer: __config__.getNumber(`panel_stats.${id}.transfer`).longValue(),
         capacity: __config__.getNumber(`panel_stats.${id}.capacity`).longValue()
     } as PanelStats;
 }
@@ -78,3 +74,8 @@ const ALL_FACES: number[] = [0, 1, ...HORIZONTAL_FACES];
 const SUN_INTENSITY_UPDATE_INTERVAL = __config__.getNumber("sun_intensity_update_interval").intValue();
 const PICKUP_ENERGY_LOSS = __config__.getNumber("pickup_energy_loss").intValue(); // TODO change to float when it is fixed in mod manager
 const DIFFERENT_PANEL_HEIGHT = __config__.getBool("different_panel_height");
+
+const Long = java.lang.Long;
+const JavaString = java.lang.String;
+const JavaInt = java.lang.Integer;
+const IllegalArgumentException = java.lang.IllegalArgumentException;

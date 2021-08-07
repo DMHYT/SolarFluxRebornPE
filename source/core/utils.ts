@@ -57,7 +57,7 @@ namespace BlockPosUtils {
             case EBlockSide.WEST: pos.x -= 1; break;
             case EBlockSide.UP: pos.y += 1; break;
             case EBlockSide.DOWN: pos.y -= 1; break;
-            default: throw new java.lang.IllegalArgumentException(`Illegal block face id ${face}`);
+            default: throw new IllegalArgumentException(`Illegal block face id ${face}`);
         }
         return pos;
     }
@@ -70,7 +70,7 @@ namespace BlockPosUtils {
             case EBlockSide.WEST: return EBlockSide.EAST;
             case EBlockSide.UP: return EBlockSide.DOWN;
             case EBlockSide.DOWN: return EBlockSide.UP;
-            default: throw new java.lang.IllegalArgumentException(`Illegal block face id ${face}`);
+            default: throw new IllegalArgumentException(`Illegal block face id ${face}`);
         }
     }
 

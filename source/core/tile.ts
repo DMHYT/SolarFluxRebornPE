@@ -7,60 +7,7 @@ namespace SFRTile {
         capacity: number, upgradeMap: UpgradeMap, extraMap: ExtraMap, isTraversalEnabled: boolean, traversal: BlockPosFace[]
     }
 
-    export const CONNECTION_CUBES = {
-        centerSouth: [1/16, 15/16, 15/16, 1],
-        centerNorth: [1/16, 0, 15/16, 1/16],
-        centerEast: [15/16, 1/16, 1, 15/16],
-        centerWest: [0, 1/16, 1/16, 15/16],
-        cornerNorthEast: [15/16, 0, 1, 1/16],
-        cornerNorthWest: [0, 0, 1/16, 1/16],
-        cornerSouthEast: [15/16, 15/16, 1, 1],
-        cornerSouthWest: [0, 15/16, 1/16, 1]
-    }
-
     export const TEMPORARY_TILES: {[key: string]: number} = {};
-
-    /**
-     * Implementation to make creating
-     * TE client instance easier
-     */
-    export class PanelClientTile {
-
-        public networkData: SyncedNetworkData;
-        public readonly x: number;
-        public readonly y: number;
-        public readonly z: number;
-        public readonly dimension: number;
-
-        constructor(readonly name: string, readonly height: number){}
-
-        public updateModel(){
-            const render = new ICRender.Model();
-            const model = new BlockRenderer.Model();
-            const shape = new ICRender.CollisionShape();
-            const entry = shape.addEntry();
-            model.addBox(0, 0, 0, 1, this.height, 1, [[`${this.name}_base`, 0], [`${this.name}_top`, 0], [`${this.name}_base`, 0]]);
-            entry.addBox(0, 0, 0, 1, this.height, 1);
-            for(let k in CONNECTION_CUBES){
-                let cube = CONNECTION_CUBES[k];
-                this.networkData.getBoolean(k) && (
-                    model.addBox(cube[0], this.height, cube[1], cube[2], (this.height + .4) / 16, cube[3], `${this.name}_base`, 0),
-                    entry.addBox(cube[0], this.height, cube[1], cube[2], (this.height + .4) / 16, cube[3]) );
-            }
-            BlockRenderer.mapAtCoords(this.x, this.y, this.z, render);
-            BlockRenderer.mapCollisionAndRaycastModelAtCoords(this.dimension, this.x, this.y, this.z, shape);
-        }
-
-        public load(){
-            this.updateModel();
-            this.networkData.addOnDataChangedListener(() => this.updateModel());
-        }
-
-        public unload(){
-            BlockRenderer.unmapAtCoords(this.x, this.y, this.z);
-        }
-
-    }
 
     export class PanelTile implements EnergyTile {
 
@@ -72,9 +19,14 @@ namespace SFRTile {
         // --- --- --- --- --- ---- --- --- --- --- --- --- --- --- --- --- //
 
         // --- --- Unused implementation from EnergyTile --- --- //
-        public energyNode: EnergyTileNode; public energyReceive(){return 0}; public isConductor(){return false};
+        public energyNode: EnergyTileNode; public isConductor(){return false};
         public canReceiveEnergy(){return false} public canExtractEnergy(){return true};
         // --- --- --- --- --- ---- ---- --- --- --- --- --- --- //
+
+        public energyReceive(type: string, amount: number, voltage: number): number {
+            Game.tipMessage(`Панелька плюнула энергию сама себе -_-\ntype=${type}, amount=${amount}, voltage=${voltage}`);
+            return 0;
+        }
 
         public readonly blockID: number;
         public readonly x: number;
@@ -84,18 +36,16 @@ namespace SFRTile {
         public container: ItemContainer;
         public blockSource: BlockSource;
 
-        public readonly client: PanelClientTile;
-
         public readonly useNetworkItemContainer: boolean = true;
-        public readonly initialGeneration: number;
+        private readonly initialGeneration: number;
         public readonly initialTransfer: number;
-        public readonly initialCapacity: number;
+        private readonly initialCapacity: number;
 
         /**
          * Flag to check if some TileEntity instance
          * is a solar panel from SFR
          */
-        public readonly __sfr__: boolean = true;
+        private readonly __sfr__: boolean = true;
 
         public defaultValues: DefaultValues = {
             energy: 0,
@@ -112,28 +62,9 @@ namespace SFRTile {
         }
         public data: DefaultValues = this.defaultValues;
 
-        public getScreenByName(){ return null; };
-
-        public updateConnectionCubes(){
-            let n = this.blockSource.getBlockId(this.x, this.y, this.z - 1) == this.blockID,
-                s = this.blockSource.getBlockId(this.x, this.y, this.z + 1) == this.blockID,
-                e = this.blockSource.getBlockId(this.x - 1, this.y, this.z) == this.blockID,
-                w = this.blockSource.getBlockId(this.x + 1, this.y, this.z) == this.blockID;
-            if(!n) this.networkData.putBoolean("centerNorth", true);
-            if(!s) this.networkData.putBoolean("centerSouth", true);
-            if(!e) this.networkData.putBoolean("centerEast", true);
-            if(!w) this.networkData.putBoolean("centerWest", true);
-            if(n == !e || (!n && !e)) this.networkData.putBoolean("cornerNorthEast", true);
-            if(n == !w || (!n && !w)) this.networkData.putBoolean("cornerNorthWest", true);
-            if(s == !e || (!s && !e)) this.networkData.putBoolean("cornerSouthEast", true);
-            if(s == !w || (!s && !w)) this.networkData.putBoolean("cornerSouthWest", true);
-            this.networkData.sendChanges();
-        }
+        public getScreenByName(){ return null }
 
         public init(){
-            for(let cubeName in CONNECTION_CUBES)
-                this.networkData.putBoolean(cubeName, false)
-            this.updateConnectionCubes();
             this.data.canSeeSky = this.blockSource.canSeeSky(this.x, this.y + 1, this.z);
             this.computeSunIntensity();
             this.updateGenerationWithSunIntensity();
@@ -148,7 +79,7 @@ namespace SFRTile {
             return c;
         }
 
-        public tryPutUpgrades(id: number, count: number, data: number, extra: ItemExtraData, player: number, inventorySlot: number, isSingle: boolean, sound: boolean): void {
+        private tryPutUpgrades(id: number, count: number, data: number, extra: ItemExtraData, player: number, inventorySlot: number, isSingle: boolean, sound: boolean): void {
             let amt: number = this.getUpgrades(id);
             let iu: SolarUpgrades.UpgradeParams = SolarUpgrades.getUpgrade(id);
             if(iu != null && amt < iu.getMaxUpgrades() && iu.canInstall(this, {id: id, count: count, data: data, extra: extra}, this.container)){
@@ -173,7 +104,7 @@ namespace SFRTile {
             }
         }
 
-        public computeSunIntensity(){
+        private computeSunIntensity(){
             if(!this.data.canSeeSky) return this.data.sunIntensity = 0;
             let celestialAngleRadians = SunUtils.getCelestialAngleRadians(1);
             if(celestialAngleRadians > Math.PI) celestialAngleRadians = 2 * Math.PI - celestialAngleRadians;
@@ -183,13 +114,13 @@ namespace SFRTile {
             this.container.sendChanges();
         }
 
-        public updateGenerationWithSunIntensity(){
+        private updateGenerationWithSunIntensity(){
             this.data.finalGeneration = Math.round(this.data.generation * this.data.sunIntensity);
-            this.container.setText("textEfficiency", java.lang.String.format(Translation.translate("info.solarflux.energy.efficiency"), [java.lang.Integer.valueOf(Math.round(this.data.sunIntensity * 100))]));
+            this.container.setText("textEfficiency", JavaString.format(Translation.translate("info.solarflux.energy.efficiency"), [JavaInt.valueOf(Math.round(this.data.sunIntensity * 100))]));
             this.container.sendChanges();
         }
 
-        public resetUpgrades(){
+        private resetUpgrades(){
             this.data.generation = this.data.finalGeneration = this.initialGeneration;
             this.data.transfer = this.initialTransfer;
             this.data.capacity = this.initialCapacity;
@@ -198,7 +129,7 @@ namespace SFRTile {
             this.data.isTraversalEnabled = false;
         }
 
-        public fillUpgradeMap(){
+        private fillUpgradeMap(){
             for(let i=0; i<5; i++){
                 let slot = this.container.getSlot(`slotUpgrade${i}`);
                 let upgrade = SolarUpgrades.getUpgrade(slot.id);
@@ -211,7 +142,7 @@ namespace SFRTile {
             }
         }
 
-        public applyUpgrades(){
+        private applyUpgrades(){
             this.resetUpgrades();
             this.fillUpgradeMap();
             for(let key in this.data.upgradeMap){
@@ -221,14 +152,14 @@ namespace SFRTile {
             this.updateGenerationWithSunIntensity();
         }
 
-        public chargeItem(){
+        private chargeItem(){
             let slot = this.container.getSlot("slotCharge"),
                 data = ChargeItemRegistry.getItemData(slot.id);
             if(typeof data !== "undefined") {
                 let type = data.energy,
                     ratio = EnergyTypeRegistry.getValueRatio("FE", type),
                     amount = Math.round(Math.min(this.data.energy, this.data.transfer) * ratio);
-                this.data.energy -= Math.round(ChargeItemRegistry.addEnergyToSlot(slot, type, amount, data.tier, true) / ratio);
+                this.data.energy -= Math.round(ChargeItemRegistry.addEnergyToSlot(slot, type, amount, data.tier) / ratio);
             }
         }
 
@@ -267,28 +198,28 @@ namespace SFRTile {
                         }
                     }
                 }
-            this.container.setText("textCharge", java.lang.String.format(Translation.translate("info.solarflux.energy.stored1"), [java.lang.Long.valueOf(this.data.energy)]));
-            this.container.setText("textCapacity", java.lang.String.format(Translation.translate("info.solarflux.energy.capacity"), [java.lang.Long.valueOf(this.data.capacity)]));
-            this.container.setText("textGeneration", java.lang.String.format(Translation.translate("info.solarflux.energy.generation"), [java.lang.Long.valueOf(this.data.finalGeneration)]));
+            this.container.setText("textCharge", JavaString.format(Translation.translate("info.solarflux.energy.stored1"), [Long.valueOf(this.data.energy)]));
+            this.container.setText("textCapacity", JavaString.format(Translation.translate("info.solarflux.energy.capacity"), [Long.valueOf(this.data.capacity)]));
+            this.container.setText("textGeneration", JavaString.format(Translation.translate("info.solarflux.energy.generation"), [Long.valueOf(this.data.finalGeneration)]));
             this.container.setScale("energyBarScale", this.data.energy / this.data.capacity);
             this.container.sendChanges();
         }
 
-        public autoBalanceEnergy(solar: PanelTile): number {
+        private autoBalanceEnergy(solar: PanelTile): number {
             let delta: number = this.data.energy - solar.data.energy;
             if(delta < 0) return solar.autoBalanceEnergy(this);
             else if(delta > 0) return this.extractEnergy(solar.receiveEnergyInternal(this.extractEnergy(solar.receiveEnergyInternal(delta / 2, true), true), false), false);
             return 0;
         }
 
-        public extractEnergy(maxExtract: number, simulate: boolean): number {
+        private extractEnergy(maxExtract: number, simulate: boolean): number {
             let energyExtracted: number = Math.min(this.data.energy, Math.min(this.data.transfer, maxExtract));
             if(!simulate) this.data.energy -= energyExtracted;
             return energyExtracted;
         }
 
-        public receiveEnergyInternal(maxReceive: number, simulate: boolean): number {
-            let energyReceived: number = Math.min(Math.min(this.data.capacity - this.data.energy, java.lang.Integer.MAX_VALUE), Math.min(this.data.transfer, maxReceive));
+        private receiveEnergyInternal(maxReceive: number, simulate: boolean): number {
+            let energyReceived: number = Math.min(Math.min(this.data.capacity - this.data.energy, JavaInt.MAX_VALUE), Math.min(this.data.transfer, maxReceive));
             if(!simulate) this.data.energy += energyReceived;
             return energyReceived;
         }
@@ -309,10 +240,10 @@ namespace SFRTile {
         }
 
         public energyTick(type: string, node: EnergyTileNode): void {
-            if(!this.data.isTraversalEnabled && this.data.traversal.length == 0 && node.receivers.length > 0){
-                let ratio = EnergyTypeRegistry.getValueRatio("FE", node.receivers[0].baseEnergy),
+            if(!this.data.isTraversalEnabled && this.data.traversal.length == 0){
+                let ratio = EnergyTypeRegistry.getValueRatio("FE", node.baseEnergy),
                     output = Math.round(Math.min(this.data.energy, this.data.transfer) * ratio),
-                    amount = Math.min(output, node.receivers[0].maxValue);
+                    amount = Math.min(output, node.maxValue);
                 this.data.energy -= Math.round(node.add(output, amount) / ratio);
             }
         }
@@ -323,7 +254,6 @@ namespace SFRTile {
             this.initialCapacity = this.defaultValues.capacity = capacity;
             const screen = createSolarGuiFor(Translation.translate(`tile.solarflux:solar_panel_${name.replace("sfr_", "")}.name`));
             this.getScreenByName = () => screen;
-            this.client = new PanelClientTile(name, height);
         }
 
         [key: string]: any;
@@ -335,7 +265,7 @@ namespace SFRTile {
         for(let i in EnergyTypeRegistry.energyTypes)
             EnergyTileRegistry.addEnergyTypeForId(BlockID[id], EnergyTypeRegistry.energyTypes[i] as EnergyType);
         let slots: {[key: string]: SlotData} = {};
-        for(let i=0; i<5; i++) slots[`slotUpgrade${i}`] = {input: true, output: true, isValid: (item, side, tileEntity: PanelTile) => SolarUpgrades.isUpgrade(item.id) && SolarUpgrades.getUpgrade(item.id).canInstall(tileEntity, item, tileEntity.container)};
+        for(let i=0; i<5; i++) slots[`slotUpgrade${i}`] = {input: true, output: true, isValid: (item, side, tileEntity: PanelTile) => SolarUpgrades.isUpgrade(item.id) && SolarUpgrades.getUpgrade(item.id).canInstall ? SolarUpgrades.getUpgrade(item.id).canInstall(tileEntity, item, tileEntity.container) : true};
         slots["slotCharge"] = {input: true, output: true, isValid: (item: ItemInstance) => typeof ChargeItemRegistry.getItemData(item.id) !== "undefined"};
         StorageInterface.createInterface(BlockID[id], { slots: slots });
         VanillaSlots.registerForTile(BlockID[id]);
