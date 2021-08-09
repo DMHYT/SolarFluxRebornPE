@@ -11,8 +11,8 @@
     "compileOnSave": false,
     "include": [
         "tools/declarations/*.d.ts",
-        "source/translation.ts",
         "source/header.ts",
+        "source/translation.ts",
         "source/core/upgrades.ts",
         "source/core/utils.ts",
         "source/core/gui.ts",

@@ -35,7 +35,13 @@ IMPORT("StorageInterface");
 IMPORT("ChargeItem");
 IMPORT("VanillaSlots");
 
-const JavaMath = new (WRAP_JAVA("ua.vsdum.sfrpe.Main"))();
+declare interface BlockPos extends Vector {
+    readonly dimension: number;
+}
+declare interface BlockPosFace extends BlockPos {
+    readonly side: number;
+    readonly rate: number;
+}
 
 const clamp = (num: number, min: number, max: number) => num < min ? min : (num > max ? max : num);
 
@@ -79,3 +85,5 @@ const Long = java.lang.Long;
 const JavaString = java.lang.String;
 const JavaInt = java.lang.Integer;
 const IllegalArgumentException = java.lang.IllegalArgumentException;
+
+const RF = EnergyTypeRegistry.assureEnergyType("RF", 0.25);

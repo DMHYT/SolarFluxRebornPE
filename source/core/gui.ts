@@ -19,7 +19,7 @@ const createSolarGuiFor = (header: string) => {
                 textGeneration: {type: "text", x: 290, y: offset + 70, width: 200, height: 25, font: {color: android.graphics.Color.BLACK, size: 20}, text: JavaString.format(Translation.translate("info.solarflux.energy.generation"), [Long.valueOf(0)])},
                 textEfficiency: {type: "text", x: 290, y: offset + 95, width: 200, height: 25, font: {color: android.graphics.Color.BLACK, size: 20}, text: JavaString.format(Translation.translate("info.solarflux.energy.efficiency"), [JavaInt.valueOf(0)])},
                 textInventory: {type: "text", x: 290, y: offset + 210, width: 200, height: 25, font: {color: android.graphics.Color.BLACK, size: 20}, text: Translation.translate("sfr.inventory")},
-                slotCharge: {type: "slot", x: 640, y: offset + 20, bitmap: "sfr.charge_slot", size: 45, isValid: (id) => typeof ChargeItemRegistry.getItemData(id) !== "undefined", visual: false},
+                slotCharge: {type: "slot", x: 640, y: offset + 20, bitmap: "sfr.charge_slot", size: 45, isValid: (id) => ChargeItemRegistry.isValidItem(id, "RF", 1), visual: false},
                 closeButton: {type: "closeButton", bitmap: "classic_close_button", bitmap2: "classic_close_button_down", scale: 3, x: 710, y: offset}
             }
             for(let i=0; i<5; i++) result[`slotUpgrade${i}`] = {type: "slot", x: 320 + 45 * i, y: offset + 140, size: 45, isValid: (id, count, data, container, item) => SolarUpgrades.isUpgrade(id) && SolarUpgrades.getUpgrade(id).canInstall(container.getParent(), item, new ItemContainer(container)), visual: false};

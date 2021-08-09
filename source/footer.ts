@@ -33,20 +33,20 @@ ItemModel.getFor(ItemID.sfr_block_charging_upgrade, 0).setModelOverrideCallback(
     const model = ItemModel.getFor(ItemID.sfr_block_charging_upgrade, 0).occupy();
     if(item.extra == null) return model;
     if(item.extra.getInt("Dim", null) != null && item.extra.getLong("Pos", null) != null && item.extra.getInt("Face", null) != null)
-        model.setGlintMaterial("item_in_hand_glint:item_in_hand");
-    return model;
+        return model.setGlintMaterial("item_in_hand_glint:item_in_hand");
 });
 Item.registerUseFunction(ItemID.sfr_block_charging_upgrade, (coords, item, block, player) => {
-    if(Entity.getSneaking(player)){
+    if(Entity.getSneaking(player)) {
         let region = BlockSource.getDefaultForActor(player),
             tile = TileEntity.getTileEntity(coords.x, coords.y, coords.z, region);
-        if(tile != null && tile.isEnergyTile){
+        if(tile != null && tile.isEnergyTile) {
             const etile = tile as EnergyTile;
-            const types = Object.keys(etile.energyTypes ?? {});
-            if(etile.energyTypes && types.length > 0 && etile.canReceiveEnergy(coords.side, types[0])){
+            if(etile.canReceiveEnergy(coords.side, "RF")) {
                 item.extra ??= new ItemExtraData();
                 item.extra.putInt("Dim", region.getDimension());
-                item.extra.putLong("Pos", JavaMath.toLong(coords.x, coords.y, coords.z));
+                item.extra.putInt("PosX", coords.x);
+                item.extra.putInt("PosY", coords.y);
+                item.extra.putInt("PosZ", coords.z);
                 item.extra.putInt("Face", coords.side);
                 Sounds.levelup(coords.x, coords.y, coords.z, region.getDimension());
             }
@@ -55,15 +55,21 @@ Item.registerUseFunction(ItemID.sfr_block_charging_upgrade, (coords, item, block
 });
 
 const block_charging_upgrade_validator = (tile: TileEntity, stack: ItemInstance) => {
-    if(stack.extra !== null && stack.extra.getLong("Pos", null) !== null && stack.extra.getInt("Face", null) !== null && stack.extra.getInt("Dim", null) !== null && tile.dimension == stack.extra.getInt("Dim")){
-        let tilePos = BlockPosUtils.fromTile(tile), otherTilePos = BlockPosUtils.fromLong(stack.extra.getLong("Pos"));
-        if(BlockPosUtils.distanceSq(tilePos, otherTilePos) <= 256){
+    if(
+        stack.extra !== null &&
+        stack.extra.getInt("PosX", null) !== null &&
+        stack.extra.getInt("PosY", null) !== null &&
+        stack.extra.getInt("PosZ", null) !== null &&
+        stack.extra.getInt("Face", null) !== null &&
+        stack.extra.getInt("Dim", null) !== null &&
+        tile.dimension == stack.extra.getInt("Dim")
+    ) {
+        const tilePos = BlockPosUtils.fromTile(tile);
+        const otherTilePos = { x: stack.extra.getInt("PosX"), y: stack.extra.getInt("PosY"), z: stack.extra.getInt("PosZ") } as BlockPos;
+        if(BlockPosUtils.distanceSq(tilePos, otherTilePos) <= 256) {
             let otherTile = TileEntity.getTileEntity(otherTilePos.x, otherTilePos.y, otherTilePos.z, tile.blockSource);
-            if(otherTile.isEnergyTile){
-                let etile = otherTile as EnergyTile;
-                return etile.energyTypes && Object.keys(etile.energyTypes).length > 0 &&
-                       etile.canReceiveEnergy(stack.extra.getInt("Face"), etile.energyTypes[Object.keys(etile.energyTypes)[0]]);
-            }
+            if(otherTile.isEnergyTile)
+                return (otherTile as EnergyTile).canReceiveEnergy(stack.extra.getInt("Face"), "RF");
         }
     }
     return false;
@@ -73,16 +79,16 @@ SolarUpgrades.registerUpgrade(ItemID.sfr_block_charging_upgrade, {
     canInstall: block_charging_upgrade_validator,
     canStayInPanel: block_charging_upgrade_validator,
     update: (tile, amount, extra) => {
-        if(World.getWorldTime() % 20 == 0){
-            let pos: BlockPos = BlockPosUtils.fromLong(extra.getLong("Pos"));
+        if(World.getThreadTime() % 20 == 0){
+            const pos: BlockPos = { x: extra.getInt("PosX"), y: extra.getInt("PosY"), z: extra.getInt("PosZ"), dimension: extra.getInt("Dim") };
             let d: number = BlockPosUtils.distanceSq(BlockPosUtils.fromTile(tile), pos);
-            if(d <= 256){
+            if(d <= 256) {
                 d /= 256;
                 tile.data.traversal = [];
-                if(tile.getUpgrades(ItemID.sfr_u_traversal) > 0){
-                    Traversal.cache = [];
-                    Traversal.cache.push(pos);
-                    Traversal.findMachines(tile, Traversal.cache, tile.data.traversal);
+                if(tile.getUpgrades(ItemID.sfr_u_traversal) > 0) {
+                    tile.data.traversalObj.cache = [];
+                    tile.data.traversalObj.cache.push(pos);
+                    tile.data.traversalObj.findMachines(tile, tile.data.traversal);
                 }
                 tile.data.traversal.push(BlockPosUtils.BlockPosFaceFromBlockPos(pos, extra.getInt("Face"), 1 - d));
             }
@@ -96,26 +102,18 @@ SolarUpgrades.registerUpgrade(ItemID.sfr_capacity_upgrade, {
 SolarUpgrades.registerUpgrade(ItemID.sfr_dispersive_upgrade, {
     getMaxUpgrades: () => 1,
     update: (tile) => {
-        let chargePlayer = (player: number, fe: number) => {
-            let isValid = (id: number) => typeof ChargeItemRegistry.getItemData(id) !== "undefined";
-            let actor = new PlayerActor(player);
-            for(let i=0; i<36; i++){
-                let slot = actor.getInventorySlot(i);
-                if(isValid(slot.id)){
-                    let type = ChargeItemRegistry.getItemData(slot.id).energy;
-                    let ratio = EnergyTypeRegistry.getValueRatio("FE", type);
-                    fe -= Math.round(ChargeItemRegistry.addEnergyTo(slot, type, Math.min(Math.round(fe * ratio), ChargeItemRegistry.getMaxCharge(slot.id) - ChargeItemRegistry.getEnergyStored(slot)), 1) / ratio);
-                    return fe;
-                }
+        const chargePlayer = (player: number, fe: number) => {
+            const isValid = (id: number) => ChargeItemRegistry.isValidItem(id, "RF", 1);
+            const actor = new PlayerActor(player);
+            for(let i=0; i<36; i++) {
+                const slot = actor.getInventorySlot(i);
+                if(isValid(slot.id))
+                    return fe - ChargeItemRegistry.addEnergyTo(slot, "RF", Math.min(fe, ChargeItemRegistry.getMaxCharge(slot.id) - ChargeItemRegistry.getEnergyStored(slot)), 1);
             }
             for(let i=0; i<4; i++){
                 let slot = actor.getArmor(i);
-                if(isValid(slot.id)){
-                    let type = ChargeItemRegistry.getItemData(slot.id).energy;
-                    let ratio = EnergyTypeRegistry.getValueRatio("FE", type);
-                    fe -= Math.round(ChargeItemRegistry.addEnergyTo(slot, type, Math.min(Math.round(fe * ratio), ChargeItemRegistry.getMaxCharge(slot.id) - ChargeItemRegistry.getEnergyStored(slot)), 1) / ratio);
-                    return fe;
-                }
+                if(isValid(slot.id))
+                    return fe - ChargeItemRegistry.addEnergyTo(slot, "RF", Math.min(fe, ChargeItemRegistry.getMaxCharge(slot.id) - ChargeItemRegistry.getEnergyStored(slot)), 1);
             }
             return fe;
         }
@@ -133,11 +131,16 @@ SolarUpgrades.registerUpgrade(ItemID.sfr_efficiency_upgrade, {
     getMaxUpgrades: () => 20,
     update: (tile, amount) => tile.data.generation *= (1 + amount * .05)
 });
+Callback.addCallback("ItemUse", (coords, item, block, ie, player) => {
+    if(item.id == 280 && (block.id == VanillaBlockID.furnace || block.id == VanillaBlockID.lit_furnace)) {
+        Game.message("" + BlockSource.getDefaultForActor(player).getBlockEntity(coords.x, coords.y, coords.z).getCompoundTag().toScriptable());
+    }
+});
 SolarUpgrades.registerUpgrade(ItemID.sfr_furnace_upgrade, {
     getMaxUpgrades: () => 1,
     update: (tile) => {
         let t: Nullable<NativeTileEntity> = tile.blockSource.getBlockEntity(tile.x, tile.y - 1, tile.z);
-        if(t != null && t.getType() == ETileEntityType.FURNACE){
+        if(t != null && t.getType() == ETileEntityType.FURNACE) {
             if(t.getSlot(0).id != 0 && t.getSlot(1).count == 0 && t.getCompoundTag().getShort("CookTime") == 0 && tile.data.energy >= 1000){
                 t.setSlot(1, 5, 1, 0);
                 tile.data.energy -= 1000;
@@ -153,7 +156,7 @@ SolarUpgrades.registerUpgrade(ItemID.sfr_traversal_upgrade, {
     getMaxUpgrades: () => 1,
     update: (tile) => {
         tile.data.isTraversalEnabled = true;
-        Traversal.update(tile);
+        tile.data.traversalObj.update(tile);
     }
 });
 

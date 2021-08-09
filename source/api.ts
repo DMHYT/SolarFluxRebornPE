@@ -144,8 +144,6 @@ ModAPI.registerAPI("SolarFluxAPI", {
     item: mod_item,
     block: mod_block,
     panel: () => new PanelBuilder(),
-    requireGlobal(command: string) {
-        return eval(command);
-    }
+    requireGlobal: (command: string) => eval(command)
 });
 Logger.Log("Solar Flux Reborn API has been shared with name SolarFluxAPI", "SolarFluxReborn DEBUG");

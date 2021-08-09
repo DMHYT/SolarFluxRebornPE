@@ -82,12 +82,6 @@ namespace BlockPosUtils {
         return Math.sqrt(distanceSq(b1, b2));
     }
 
-    export function fromLong(serialized: number): BlockPos {
-        let pos = {} as BlockPos;
-        JavaMath.fromLong(serialized, pos);
-        return pos;
-    }
-
     export function fromEntity(entity: number): BlockPos {
         let pos: Vector = Entity.getPosition(entity);
         return { ...pos, dimension: Entity.getDimension(entity) };
@@ -97,42 +91,42 @@ namespace BlockPosUtils {
         return { x: tile.x, y: tile.y, z: tile.z, dimension: tile.dimension } as BlockPos;
     }
 
-}
-
-namespace Traversal {
-
-    export var cache: BlockPos[] = [];
-
-    export function update(tile: SFRTile.PanelTile): void {
-        if(World.getWorldTime() % 20 == 0){
-            cache = [];
-            tile.data.traversal = [];
-            cache.push({ ...tile } as BlockPos);
-            findMachines(tile, cache, tile.data.traversal);
-        }
+    export function compare(pos1: BlockPos, pos2: BlockPos): boolean {
+        return pos1.x == pos2.x && pos1.y == pos2.y && pos1.z == pos2.z && pos1.dimension == pos2.dimension;
     }
 
-    export function findMachines(tile: SFRTile.PanelTile, cache: BlockPos[], acceptors: BlockPosFace[]): void {
-        for(let i=0; i<cache.length; i++){
-            let pos: BlockPos = cache[i];
-            for(let f in ALL_FACES){
-                let face = ALL_FACES[f];
-                let p: BlockPos = BlockPosUtils.offset(pos, face);
-                if(BlockPosUtils.distance(p, cache[0]) > 25) continue;
-                let t: TileEntity = TileEntity.getTileEntity(p.x, p.y, p.z, tile.blockSource);
-                if(t != null && t.isMachine && t.blockSource){
-                    let e: EnergyTile = t as EnergyTile;
-                    if(e.canReceiveEnergy(BlockPosUtils.oppositeFace(face), "Eu") || e.canReceiveEnergy(BlockPosUtils.oppositeFace(face), "RF") || e.canReceiveEnergy(BlockPosUtils.oppositeFace(face), "FE")){
-                        if(!!~cache.find((item, index, array) => {
-                            return item.x == p.x && item.y == p.y && item.z == p.z && item.dimension == p.dimension;
-                        })){
-                            cache.push(p);
-                            acceptors.push({ ...p, side: BlockPosUtils.oppositeFace(face), rate: 1 });
-                        }
+}
+
+class Traversal {
+    
+    public cache: BlockPos[] = [];
+
+    public update(tile: SFRTile.PanelTile): void {
+        if(World.getThreadTime() % 20 == 0) {
+            this.cache = [];
+            tile.data.traversal = [];
+            this.cache.push({ x: tile.x, y: tile.y, z: tile.z, dimension: tile.dimension });
+            this.findMachines(tile, tile.data.traversal);
+        }
+    }
+    
+    public findMachines(tile: SFRTile.PanelTile, acceptors: BlockPosFace[]): void {
+        for(let i=0; i<this.cache.length; i++) {
+            const pos = this.cache[i];
+            for(let f in ALL_FACES) {
+                const face = ALL_FACES[f];
+                const p = BlockPosUtils.offset(pos, face);
+                if(BlockPosUtils.distance(p, this.cache[0]) > 25) continue;
+                const t = TileEntity.getTileEntity(p.x, p.y, p.z, tile.blockSource);
+                if(t != null && t.isEnergyTile && t.blockSource) {
+                    const e = t as EnergyTile;
+                    if(e.canReceiveEnergy(BlockPosUtils.oppositeFace(face), "RF") && !!this.cache.find((item) => BlockPosUtils.compare(item, p))) {
+                        this.cache.push(p);
+                        acceptors.push({ ...p, side: BlockPosUtils.oppositeFace(face), rate: 1 });
                     }
                 }
             }
         }
     }
-
+    
 }

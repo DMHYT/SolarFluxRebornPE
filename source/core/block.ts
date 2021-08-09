@@ -6,7 +6,6 @@ namespace SolarPanel {
     const BLOCK = ICRender.BLOCK;
 
     export function setupModelFor(name: string, height: number): void {
-        ICRender.getGroup("ic-wire").add(BlockID[`sfr_${name}`], -1);
         ICRender.getGroup("rf-wire").add(BlockID[`sfr_${name}`], -1);
         const render = new ICRender.Model();
         const main_cube = new BlockRenderer.Model();
@@ -18,8 +17,8 @@ namespace SolarPanel {
         shape.addEntry().addBox(0, 0, 0, 1, height, 1);
         const N = BLOCK(0, 0, -1, group, false);
         const S = BLOCK(0, 0, 1, group, false);
-        const E = BLOCK(-1, 0, 0, group, false);
-        const W = BLOCK(1, 0, 0, group, false);
+        const E = BLOCK(1, 0, 0, group, false);
+        const W = BLOCK(-1, 0, 0, group, false);
         const boxes: {box: [number, number, number, number], condition: ICRender.CONDITION}[] = [
       /*N*/ {box: [1/16, 0, 15/16, 1/16], condition: NOT(N)},
       /*S*/ {box: [1/16, 15/16, 15/16, 1], condition: NOT(S)},
@@ -70,7 +69,10 @@ namespace SolarPanel {
         Item.registerNameOverrideFunction(BlockID[`sfr_${name}`], (item, name) => {
             if(item.extra == null) return name;
             if(item.extra.getLong("SFREnergy", -1) == -1) return name;
-            return `${name}\n§7${JavaString.format(Translation.translate("info.solarflux.energy.stored2"), [Long.valueOf(item.extra.getLong("SFREnergy")), Long.valueOf(getStatsFor(`sfr_${name}`).capacity)])}`
+            const translated = Translation.translate("info.solarflux.energy.stored2");
+            const energyInItem = Long.valueOf(item.extra.getLong("SFREnergy"));
+            const formatted = JavaString.format(translated, [energyInItem, Long.valueOf(capacity)]);
+            return `${name}\n§7${formatted}`;
         });
         SFR_STUFF.push(BlockID[`sfr_${name}`]);
     }
