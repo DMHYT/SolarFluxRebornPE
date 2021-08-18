@@ -111,10 +111,9 @@ class Traversal {
     }
     
     public findMachines(tile: SFRTile.PanelTile, acceptors: BlockPosFace[]): void {
-        for(let i=0; i<this.cache.length; i++) {
+        for(let i in this.cache) {
             const pos = this.cache[i];
-            for(let f in ALL_FACES) {
-                const face = ALL_FACES[f];
+            for(let face = 0; face > 6; face++) {
                 const p = BlockPosUtils.offset(pos, face);
                 if(BlockPosUtils.distance(p, this.cache[0]) > 25) continue;
                 const t = TileEntity.getTileEntity(p.x, p.y, p.z, tile.blockSource);
@@ -137,4 +136,44 @@ const formatNumber = (num: number) => {
     if(num >= 1e6) return Math.floor(num / 1e5) / 10 + "M";
     if(num >= 1000) return Math.floor(num / 100) / 10 + "K";
     return num.toString();
+}
+
+interface RedstoneSignalParams { power: number, signal: number, onLoad: boolean }
+
+class TileEntityImplementation<T> implements TileEntity, TileEntity.TileEntityPrototype {
+
+    public readonly useNetworkItemContainer = true;
+    public readonly x: number;
+    public readonly y: number;
+    public readonly z: number;
+    public readonly dimension: number;
+    public readonly blockID: number;
+    public readonly data: T;
+    public readonly container: ItemContainer;
+    public readonly liquidStorage: LiquidRegistry.Storage;
+    public readonly isLoaded: boolean;
+    public readonly remove: boolean;
+    public selfDestroy(): void {}
+    public sendPacket(name: string, data: any): void {}
+    public readonly blockSource: BlockSource;
+    public readonly networkData: SyncedNetworkData;
+    public readonly networkEntity: NetworkEntity;
+    public sendResponse(packetName: string, data: any): void {}
+    public created(): void {}
+    public events: {[packetName: string]: (data: any, extra: any) => void};
+    public containerEvents: {[eventName: string]: (container: ItemContainer, window: Nullable<UI.IWindow>, windowContent: Nullable<UI.WindowContent>, eventData: any) => void};
+    public init(): void {}
+    public tick(): void {}
+    public click(id: number, count: number, data: number, coords: Callback.ItemUseCoordinates, player: number, extra: Nullable<ItemExtraData>): boolean | void {}
+    public destroyBlock(coords: Callback.ItemUseCoordinates, player: number): void {}
+    public redstone(params: RedstoneSignalParams): void {}
+    public projectileHit(coords: Callback.ItemUseCoordinates, target: Callback.ProjectileHitTarget): void {}
+    public destroy(): boolean | void {}
+    /** @deprecated */
+    public getGuiScreen(): UI.IWindow { return }
+    public getScreenName(player: number, coords: Vector): string { return }
+    public getScreenByName(screenName?: string): UI.IWindow { return }
+    public requireMoreLiquid(liquid: string, amount: number): void {}
+    constructor(public readonly defaultValues: T) {}
+    
 }

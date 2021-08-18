@@ -74,14 +74,12 @@ const addShaped = (id: number, count: number, data: number, mask: string[], keys
     Recipes.addShaped({id: id, count: count, data: data}, mask, keys);
 }
 
-const HORIZONTAL_FACES: number[] = [2, 3, 4, 5];
-const ALL_FACES: number[] = [0, 1, ...HORIZONTAL_FACES];
-
 const SUN_INTENSITY_UPDATE_INTERVAL = __config__.getNumber("sun_intensity_update_interval").intValue();
 const PICKUP_ENERGY_LOSS = __config__.getNumber("pickup_energy_loss").intValue(); // TODO change to float when it is fixed in mod manager
 const DIFFERENT_PANEL_HEIGHT = __config__.getBool("different_panel_height");
 const RAIN_MULTIPLIER = clamp(__config__.getNumber("rain_multiplier").floatValue(), 0, 1);
 const THUNDER_MULTIPLIER = clamp(__config__.getNumber("thunder_multiplier").floatValue(), 0, 1);
+const CONTAINER_UPDATE_INTERVAL = __config__.getBool("specify_container_update_interval") ? clamp(__config__.getNumber("container_update_interval").intValue(), 2, 20) : 1;
 
 const Long = java.lang.Long;
 const JavaString = java.lang.String;

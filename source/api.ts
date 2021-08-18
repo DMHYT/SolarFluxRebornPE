@@ -143,6 +143,7 @@ ModAPI.registerAPI("SolarFluxAPI", {
     vanilla: vanilla,
     item: mod_item,
     block: mod_block,
+    UpgradeRegistry: SolarUpgrades,
     panel: () => new PanelBuilder(),
     requireGlobal: (command: string) => eval(command)
 });

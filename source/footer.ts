@@ -1,5 +1,6 @@
 createItem("blank_upgrade");
 createItem("block_charging_upgrade");
+createItem("block_charging_upgrade_bound");
 createItem("capacity_upgrade");
 createItem("dispersive_upgrade");
 createItem("efficiency_upgrade");
@@ -22,6 +23,11 @@ createStandardPanel("8");
 createItem("transfer_rate_upgrade");
 createItem("traversal_upgrade");
 Item.getItemById("sfr_block_charging_upgrade").setMaxStackSize(1);
+(() => {
+    const item = Item.getItemById("sfr_block_charging_upgrade_bound");
+    item.setMaxStackSize(1);
+    item.setGlint(true);
+})();
 Item.getItemById("sfr_capacity_upgrade").setMaxStackSize(10);
 Item.getItemById("sfr_dispersive_upgrade").setMaxStackSize(1);
 Item.getItemById("sfr_efficiency_upgrade").setMaxStackSize(20);
@@ -29,12 +35,7 @@ Item.getItemById("sfr_furnace_upgrade").setMaxStackSize(1);
 Item.getItemById("sfr_transfer_rate_upgrade").setMaxStackSize(10);
 Item.getItemById("sfr_traversal_upgrade").setMaxStackSize(1);
 Item.addCreativeGroup("sfr", Translation.translate("itemGroup.solarflux"), SFR_STUFF);
-ItemModel.getFor(ItemID.sfr_block_charging_upgrade, 0).setModelOverrideCallback(item => {
-    const model = ItemModel.getFor(ItemID.sfr_block_charging_upgrade, 0).occupy();
-    if(item.extra == null) return model;
-    if(item.extra.getInt("Dim", null) != null && item.extra.getLong("Pos", null) != null && item.extra.getInt("Face", null) != null)
-        return model.setGlintMaterial("item_in_hand_glint:item_in_hand");
-});
+
 Item.registerUseFunction(ItemID.sfr_block_charging_upgrade, (coords, item, block, player) => {
     if(Entity.getSneaking(player)) {
         let region = BlockSource.getDefaultForActor(player),
@@ -42,39 +43,30 @@ Item.registerUseFunction(ItemID.sfr_block_charging_upgrade, (coords, item, block
         if(tile != null && tile.isEnergyTile) {
             const etile = tile as EnergyTile;
             if(etile.canReceiveEnergy(coords.side, "RF")) {
-                item.extra ??= new ItemExtraData();
-                item.extra.putInt("Dim", region.getDimension());
-                item.extra.putInt("PosX", coords.x);
-                item.extra.putInt("PosY", coords.y);
-                item.extra.putInt("PosZ", coords.z);
-                item.extra.putInt("Face", coords.side);
+                const extra = new ItemExtraData();
+                extra.putInt("Dim", region.getDimension());
+                extra.putInt("PosX", coords.x);
+                extra.putInt("PosY", coords.y);
+                extra.putInt("PosZ", coords.z);
+                extra.putInt("Face", coords.side);
+                Entity.setCarriedItem(player, ItemID.sfr_block_charging_upgrade_bound, 1, 0, extra);
                 Sounds.levelup(coords.x, coords.y, coords.z, region.getDimension());
             }
         }
     }
 });
+Item.registerUseFunction(ItemID.sfr_block_charging_upgrade_bound, (coords, item, block, player) => Entity.getSneaking(player) && Entity.setCarriedItem(player, ItemID.sfr_block_charging_upgrade, 1, 0, null));
 
 const block_charging_upgrade_validator = (tile: TileEntity, stack: ItemInstance) => {
-    if(
-        stack.extra !== null &&
-        stack.extra.getInt("PosX", null) !== null &&
-        stack.extra.getInt("PosY", null) !== null &&
-        stack.extra.getInt("PosZ", null) !== null &&
-        stack.extra.getInt("Face", null) !== null &&
-        stack.extra.getInt("Dim", null) !== null &&
-        tile.dimension == stack.extra.getInt("Dim")
-    ) {
-        const tilePos = BlockPosUtils.fromTile(tile);
-        const otherTilePos = { x: stack.extra.getInt("PosX"), y: stack.extra.getInt("PosY"), z: stack.extra.getInt("PosZ") } as BlockPos;
-        if(BlockPosUtils.distanceSq(tilePos, otherTilePos) <= 256) {
-            let otherTile = TileEntity.getTileEntity(otherTilePos.x, otherTilePos.y, otherTilePos.z, tile.blockSource);
-            if(otherTile.isEnergyTile)
-                return (otherTile as EnergyTile).canReceiveEnergy(stack.extra.getInt("Face"), "RF");
-        }
+    const tilePos = BlockPosUtils.fromTile(tile);
+    const otherTilePos = { x: stack.extra.getInt("PosX"), y: stack.extra.getInt("PosY"), z: stack.extra.getInt("PosZ") } as BlockPos;
+    if(BlockPosUtils.distanceSq(tilePos, otherTilePos) <= 256) {
+        let otherTile = TileEntity.getTileEntity(otherTilePos.x, otherTilePos.y, otherTilePos.z, tile.blockSource);
+        if(otherTile.isEnergyTile)
+            return (otherTile as EnergyTile).canReceiveEnergy(stack.extra.getInt("Face"), "RF");
     }
-    return false;
 }
-SolarUpgrades.registerUpgrade(ItemID.sfr_block_charging_upgrade, {
+SolarUpgrades.registerUpgrade(ItemID.sfr_block_charging_upgrade_bound, {
     getMaxUpgrades: () => 1,
     canInstall: block_charging_upgrade_validator,
     canStayInPanel: block_charging_upgrade_validator,

@@ -70,6 +70,30 @@ declare interface PanelBuilder {
      */
     buildAndRegister(): PanelData;
 }
+/** Interface to be used to specify params for custom solar panel upgrades */
+declare interface SolarFluxUpgradeParams {
+    /** @returns how many upgrades can maximum be in panel at the same time (required) */
+    getMaxUpgrades(): number;
+    /** Function that will be called every tick, when the upgrade item is inside of the solar panel (optional) */
+    update?(tile: TileEntity, amount: number, extra?: ItemExtraData): void;
+    /** @returns whether the given upgrade item can stay in the given solar panel */
+    canStayInPanel?(tile: TileEntity, stack: ItemInstance, upgradeInv: ItemContainer): boolean;
+    /** @returns whether the given upgrade item can be installed into the given solar panel */
+    canInstall?(tile: TileEntity, stack: ItemInstance, upgradeInv: ItemContainer): boolean;
+}
+/** Small module to register custom solar panel upgrades */
+declare interface SolarFluxUpgradeRegistry {
+    /** Object containing all registered solar panel upgrades */
+    readonly upgrades: {[key: number]: SolarFluxUpgradeParams};
+    /** Registers the item of given id as solar panel upgrades with given params */
+    registerUpgrade(id: number, params: SolarFluxUpgradeParams): void;
+    /** @returns whether the item of given numeric id is registered as solar panel upgrade */
+    isUpgrade(id: number): boolean;
+    /** @returns solar panel upgrade params for the item of given id, or null, if it is not registered as an upgrade */
+    getUpgrade(id: number): Nullable<SolarFluxUpgradeParams>;
+    /** Removes solar panel upgrade params for the item of given id */
+    removeUpgrade(id: number): void;
+}
 /** Solar Flux Reborn shared ModAPI object */
 declare interface SolarFluxAPI {
     /** @returns vanilla item's id and data object from given numeric id and optional data */
@@ -80,6 +104,7 @@ declare interface SolarFluxAPI {
     block(id: string, data?: number): IDData;
     /** @returns `PanelBuilder` object to register new custom solar panel */
     panel(): PanelBuilder;
+    readonly UpgradeRegistry: SolarFluxUpgradeRegistry;
 }
 declare namespace ModAPI {
     /** Callback to use Solar Flux Reborn shared ModAPI */

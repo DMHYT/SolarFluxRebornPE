@@ -2,13 +2,16 @@ namespace SFRTile {
 
     type UpgradeMap = {[id: number]: number};
     type ExtraMap = {[id: number]: ItemExtraData};
-    interface DefaultValues {
+
+    export const TEMPORARY_TILES: {[key: string]: number} = {};
+
+    interface PanelTileDefaultValues {
         energy: number,
         canSeeSky: boolean,
         sunIntensity: number,
         generation: number,
         finalGeneration: number,
-        transfer: number
+        transfer: number,
         capacity: number,
         upgradeMap: UpgradeMap,
         extraMap: ExtraMap,
@@ -17,20 +20,7 @@ namespace SFRTile {
         traversalObj: Traversal
     }
 
-    export const TEMPORARY_TILES: {[key: string]: number} = {};
-
-    export class PanelTile implements EnergyTile {
-
-        // --- --- Unused implementation from standart TE prototype --- --- //
-        public readonly liquidStorage: LiquidRegistry.Storage;
-        public readonly isLoaded: boolean;
-        public readonly remove: boolean;
-        public selfDestroy() {}
-        public sendPacket(name: string, data: object) {}
-        public readonly networkData: SyncedNetworkData;
-        public readonly networkEntity: NetworkEntity;
-        public sendResponse(name: string, data: object) {}
-        // --- --- --- --- --- ---- --- --- --- --- --- --- --- --- --- --- //
+    export class PanelTile extends TileEntityImplementation<PanelTileDefaultValues> implements EnergyTile {
 
         // --- --- Unused implementation from EnergyTile --- --- //
         public readonly energyNode: EnergyTileNode; 
@@ -40,15 +30,6 @@ namespace SFRTile {
         public energyReceive() { return 0 }
         // --- --- --- --- --- ---- ---- --- --- --- --- --- --- //
 
-        public readonly blockID: number;
-        public readonly x: number;
-        public readonly y: number;
-        public readonly z: number;
-        public readonly dimension: number;
-        public container: ItemContainer;
-        public blockSource: BlockSource;
-
-        public readonly useNetworkItemContainer: boolean = true;
         private readonly initialGeneration: number;
         public readonly initialTransfer: number;
         private readonly initialCapacity: number;
@@ -59,28 +40,18 @@ namespace SFRTile {
          */
         private readonly __sfr__: boolean = true;
 
-        public defaultValues: DefaultValues = {
-            energy: 0,
-            canSeeSky: false,
-            sunIntensity: 0,
-            generation: 0,
-            finalGeneration: 0,
-            transfer: 0,
-            capacity: 0,
-            upgradeMap: {} as UpgradeMap,
-            extraMap: {} as ExtraMap,
-            isTraversalEnabled: false,
-            traversal: [] as BlockPosFace[],
-            traversalObj: new Traversal()
-        }
-        public data: DefaultValues = this.defaultValues;
-
-        public getScreenByName(){ return null }
-
         public init(): void {
             this.data.canSeeSky = this.blockSource.canSeeSky(this.x, this.y + 1, this.z);
             this.calculateEfficiency();
             this.updateGenerationWithSunIntensity();
+            this.container.setGlobalAddTransferPolicy((cont, name, id, count, data, extra, player) => {
+                if(name.startsWith("slotUpgrade")) {
+                    return SolarUpgrades.isUpgrade(id) && SolarUpgrades.getUpgrade(id)?.canInstall?.apply(null, [this, { id, count, data, extra }, this.container]) ? count : 0;
+                } else if(name == "slotCharge") {
+                    return ChargeItemRegistry.isValidItem(id, "RF", 1) ? count : 0;
+                }
+                return count;
+            });
         }
         
         public getUpgrades(type: number): number {
@@ -196,15 +167,16 @@ namespace SFRTile {
 
         public tick(): void {
             StorageInterface.checkHoppers(this);
-            if(World.getThreadTime() % 20 == 0) this.data.canSeeSky = this.blockSource.canSeeSky(this.x, this.y + 1, this.z);
-            if(World.getThreadTime() % 20 == 0) this.data.traversal = [];
-            if(World.getThreadTime() % SUN_INTENSITY_UPDATE_INTERVAL == 0) this.calculateEfficiency();
+            if(World.getThreadTime() % 20 == 0) {
+                this.data.canSeeSky = this.blockSource.canSeeSky(this.x, this.y + 1, this.z);
+                this.data.traversal = [];
+            }
+            World.getThreadTime() % SUN_INTENSITY_UPDATE_INTERVAL == 0 && this.calculateEfficiency();
             this.applyUpgrades();
             this.data.energy += Math.min(this.data.capacity - this.data.energy, this.data.finalGeneration);
             this.chargeItem();
-            for(let f in HORIZONTAL_FACES){
-                let hor = HORIZONTAL_FACES[f],
-                    pos = BlockPosUtils.offset(BlockPosUtils.fromTile(this), hor),
+            for(let hor = 2; hor < 6; hor++){
+                let pos = BlockPosUtils.offset(BlockPosUtils.fromTile(this), hor),
                     tile = TileEntity.getTileEntity(pos.x, pos.y, pos.z, this.blockSource);
                 if(tile == null) continue;
                 if(tile.__sfr__) this.autoBalanceEnergy(tile as PanelTile);
@@ -222,11 +194,13 @@ namespace SFRTile {
                         }
                     }
                 }
-            this.container.setText("textCharge", JavaString.format(Translation.translate("info.solarflux.energy.stored1"), [Long.valueOf(this.data.energy)]));
-            this.container.setText("textCapacity", JavaString.format(Translation.translate("info.solarflux.energy.capacity"), [Long.valueOf(this.data.capacity)]));
-            this.container.setText("textGeneration", JavaString.format(Translation.translate("info.solarflux.energy.generation"), [Long.valueOf(this.data.finalGeneration)]));
-            this.container.setScale("energyBarScale", this.data.energy / this.data.capacity);
-            this.container.sendChanges();
+            if(CONTAINER_UPDATE_INTERVAL <= 1 || World.getThreadTime() % CONTAINER_UPDATE_INTERVAL == 0) {
+                this.container.setText("textCharge", JavaString.format(Translation.translate("info.solarflux.energy.stored1"), [Long.valueOf(this.data.energy)]));
+                this.container.setText("textCapacity", JavaString.format(Translation.translate("info.solarflux.energy.capacity"), [Long.valueOf(this.data.capacity)]));
+                this.container.setText("textGeneration", JavaString.format(Translation.translate("info.solarflux.energy.generation"), [Long.valueOf(this.data.finalGeneration)]));
+                this.container.setScale("energyBarScale", this.data.energy / this.data.capacity);
+                this.container.sendChanges();
+            }
         }
 
         private autoBalanceEnergy(solar: PanelTile): number {
@@ -271,6 +245,20 @@ namespace SFRTile {
         }
 
         constructor(name: string, height: number, generation: number, capacity: number, transfer: number) {
+            super({
+                energy: 0,
+                canSeeSky: false,
+                sunIntensity: 0,
+                generation: 0,
+                finalGeneration: 0,
+                transfer: 0,
+                capacity: 0,
+                upgradeMap: {} as UpgradeMap,
+                extraMap: {} as ExtraMap,
+                isTraversalEnabled: false,
+                traversal: [] as BlockPosFace[],
+                traversalObj: new Traversal()
+            });
             this.initialGeneration = this.defaultValues.generation = this.defaultValues.finalGeneration = generation;
             this.initialTransfer = this.defaultValues.transfer = transfer;
             this.initialCapacity = this.defaultValues.capacity = capacity;
@@ -286,7 +274,12 @@ namespace SFRTile {
         TileEntity.registerPrototype(BlockID[id], new PanelTile(id, height, generation, capacity, transfer));
         EnergyTileRegistry.addEnergyTypeForId(BlockID[id], RF);
         let slots: {[key: string]: SlotData} = {};
-        for(let i=0; i<5; i++) slots[`slotUpgrade${i}`] = {input: true, output: true, isValid: (item, side, tileEntity: PanelTile) => SolarUpgrades.isUpgrade(item.id) && SolarUpgrades.getUpgrade(item.id).canInstall ? SolarUpgrades.getUpgrade(item.id).canInstall(tileEntity, item, tileEntity.container) : true};
+        for(let i=0; i<5; i++) 
+            slots[`slotUpgrade${i}`] = {
+                input: true, output: true, 
+                isValid: (item, s, tileEntity: PanelTile) => SolarUpgrades.isUpgrade(item.id) && 
+                                                             SolarUpgrades.getUpgrade(item.id)?.canInstall?.apply(null, [tileEntity, item, tileEntity.container])
+            }
         slots["slotCharge"] = {input: true, output: true, isValid: (item: ItemInstance) => ChargeItemRegistry.isValidItem(item.id, "RF", 1)};
         StorageInterface.createInterface(BlockID[id], { slots: slots });
         VanillaSlots.registerForTile(BlockID[id]);

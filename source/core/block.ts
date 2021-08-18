@@ -8,11 +8,9 @@ namespace SolarPanel {
     export function setupModelFor(name: string, height: number): void {
         ICRender.getGroup("rf-wire").add(BlockID[`sfr_${name}`], -1);
         const render = new ICRender.Model();
-        const main_cube = new BlockRenderer.Model();
         const group = ICRender.getGroup(`sfr_${name}`);
         group.add(BlockID[`sfr_${name}`], -1);
-        main_cube.addBox(0, 0, 0, 1, height, 1, [[`sfr_${name}_base`, 0], [`sfr_${name}_top`, 0], [`sfr_${name}_base`, 0]]);
-        render.addEntry(main_cube);
+        render.addEntry(BlockRenderer.createTexturedBox(0, 0, 0, 1, height, 1, [[`sfr_${name}_base`, 0], [`sfr_${name}_top`, 0], [`sfr_${name}_base`, 0]]));
         const shape = new ICRender.CollisionShape();
         shape.addEntry().addBox(0, 0, 0, 1, height, 1);
         const N = BLOCK(0, 0, -1, group, false);
