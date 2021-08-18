@@ -28,7 +28,7 @@ item.solarflux:block_charging_upgrade.name=Улучшение: Зарядка б
 
 ### TOOLTIPS ###
 info.solarflux.energy.stored1=Хранится: %,d FE
-info.solarflux.energy.stored2=Хранится: %,d/%,d FE
+info.solarflux.energy.stored2=Хранится: %s/%s FE
 info.solarflux.energy.generation=Генерация: %,d FE/tick
 info.solarflux.energy.transfer=Передача: %,d FE/tick
 info.solarflux.energy.capacity=Ёмкость: %,d FE

@@ -70,8 +70,8 @@ namespace SolarPanel {
             if(item.extra == null) return name;
             if(item.extra.getLong("SFREnergy", -1) == -1) return name;
             const translated = Translation.translate("info.solarflux.energy.stored2");
-            const energyInItem = Long.valueOf(item.extra.getLong("SFREnergy"));
-            const formatted = JavaString.format(translated, [energyInItem, Long.valueOf(capacity)]);
+            const energyInItem = item.extra.getLong("SFREnergy");
+            const formatted = JavaString.format(translated, [new JavaString(formatNumber(energyInItem)), new JavaString(formatNumber(capacity))]);
             return `${name}\n§7${formatted}`;
         });
         SFR_STUFF.push(BlockID[`sfr_${name}`]);

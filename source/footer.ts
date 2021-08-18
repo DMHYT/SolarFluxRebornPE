@@ -29,7 +29,7 @@ Item.getItemById("sfr_furnace_upgrade").setMaxStackSize(1);
 Item.getItemById("sfr_transfer_rate_upgrade").setMaxStackSize(10);
 Item.getItemById("sfr_traversal_upgrade").setMaxStackSize(1);
 Item.addCreativeGroup("sfr", Translation.translate("itemGroup.solarflux"), SFR_STUFF);
-ItemModel.getFor(ItemID.sfr_block_charging_upgrade, 0).setModelOverrideCallback((item) => {
+ItemModel.getFor(ItemID.sfr_block_charging_upgrade, 0).setModelOverrideCallback(item => {
     const model = ItemModel.getFor(ItemID.sfr_block_charging_upgrade, 0).occupy();
     if(item.extra == null) return model;
     if(item.extra.getInt("Dim", null) != null && item.extra.getLong("Pos", null) != null && item.extra.getInt("Face", null) != null)

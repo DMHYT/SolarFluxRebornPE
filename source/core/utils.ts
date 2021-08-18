@@ -130,3 +130,11 @@ class Traversal {
     }
     
 }
+
+const formatNumber = (num: number) => {
+    if(num >= 1e12) return Math.floor(num / 1e11) / 10 + "T";
+    if(num >= 1e9) return Math.floor(num / 1e8) / 10 + "B";
+    if(num >= 1e6) return Math.floor(num / 1e5) / 10 + "M";
+    if(num >= 1000) return Math.floor(num / 100) / 10 + "K";
+    return num.toString();
+}

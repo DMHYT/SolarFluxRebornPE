@@ -33,6 +33,20 @@
             "max": 200,
             "displayIf": "enabled"
         },
+        "rain_multiplier": {
+            "name": {
+                "en": "Rain Multiplier",
+                "ru": "Множитель при дожде"
+            },
+            "displayIf": "enabled"
+        },
+        "thunder_multiplier": {
+            "name": {
+                "en": "Thunder Multiplier",
+                "ru": "Множитель при грозе"
+            },
+            "displayIf": "enabled"
+        },
         "panel_stats": {
             "name": {
                 "en": "Panel Stats",

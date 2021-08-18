@@ -80,10 +80,13 @@ const ALL_FACES: number[] = [0, 1, ...HORIZONTAL_FACES];
 const SUN_INTENSITY_UPDATE_INTERVAL = __config__.getNumber("sun_intensity_update_interval").intValue();
 const PICKUP_ENERGY_LOSS = __config__.getNumber("pickup_energy_loss").intValue(); // TODO change to float when it is fixed in mod manager
 const DIFFERENT_PANEL_HEIGHT = __config__.getBool("different_panel_height");
+const RAIN_MULTIPLIER = clamp(__config__.getNumber("rain_multiplier").floatValue(), 0, 1);
+const THUNDER_MULTIPLIER = clamp(__config__.getNumber("thunder_multiplier").floatValue(), 0, 1);
 
 const Long = java.lang.Long;
 const JavaString = java.lang.String;
 const JavaInt = java.lang.Integer;
 const IllegalArgumentException = java.lang.IllegalArgumentException;
+const Color = android.graphics.Color;
 
 const RF = EnergyTypeRegistry.assureEnergyType("RF", 0.25);

@@ -79,7 +79,7 @@ namespace SFRTile {
 
         public init(): void {
             this.data.canSeeSky = this.blockSource.canSeeSky(this.x, this.y + 1, this.z);
-            this.computeSunIntensity();
+            this.calculateEfficiency();
             this.updateGenerationWithSunIntensity();
         }
         
@@ -117,17 +117,30 @@ namespace SFRTile {
             }
         }
 
-        private computeSunIntensity(): void {
-            if(!this.data.canSeeSky) {
-                this.data.sunIntensity = 0;
-                return;
-            }
+        private computeSunIntensity(): number {
+            if(!this.data.canSeeSky) return 0;
             let celestialAngleRadians = SunUtils.getCelestialAngleRadians(1);
-            if(celestialAngleRadians > Math.PI) celestialAngleRadians = 2 * Math.PI - celestialAngleRadians;
-            let lowLightCount = 0, 
-                multiplicator = 1.5 - (lowLightCount * .122), 
-                displacement = 1.2 + (lowLightCount * .08);
-            this.data.sunIntensity = clamp(multiplicator * Math.cos(celestialAngleRadians / displacement), 0, 1);
+            if(celestialAngleRadians > Math.PI)
+                celestialAngleRadians = 2 * Math.PI - celestialAngleRadians;
+            const lowLightCount = 0;
+            const multiplicator = 1.5 - (lowLightCount * .122);
+            const displacement = 1.2 - (lowLightCount * .08);
+            return clamp(multiplicator * Math.cos(celestialAngleRadians / displacement), 0, 1);
+        }
+
+        private calculateEfficiency(): void {
+            let eff = this.computeSunIntensity();
+            const weather = World.getWeather();
+            let raining = weather.rain / 10;
+            raining = raining > .2 ? (raining - .2) / .8 : 0;
+            raining = Math.sin(raining * Math.PI / 2);
+            raining = 1 - raining * (1 - RAIN_MULTIPLIER);
+            let thundering = weather.thunder / 10;
+            thundering = thundering > .75 ? (thundering - .75) / .25 : 0;
+            thundering = Math.sin(thundering * Math.PI / 2);
+            thundering = 1 - thundering * (1 - THUNDER_MULTIPLIER);
+            eff *= raining * thundering;
+            this.data.sunIntensity = eff;
             this.container.setScale("sunBarScale", this.data.sunIntensity);
             this.container.sendChanges();
         }
@@ -185,7 +198,7 @@ namespace SFRTile {
             StorageInterface.checkHoppers(this);
             if(World.getThreadTime() % 20 == 0) this.data.canSeeSky = this.blockSource.canSeeSky(this.x, this.y + 1, this.z);
             if(World.getThreadTime() % 20 == 0) this.data.traversal = [];
-            if(World.getThreadTime() % SUN_INTENSITY_UPDATE_INTERVAL == 0) this.computeSunIntensity();
+            if(World.getThreadTime() % SUN_INTENSITY_UPDATE_INTERVAL == 0) this.calculateEfficiency();
             this.applyUpgrades();
             this.data.energy += Math.min(this.data.capacity - this.data.energy, this.data.finalGeneration);
             this.chargeItem();

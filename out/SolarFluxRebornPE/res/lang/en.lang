@@ -28,7 +28,7 @@ item.solarflux:block_charging_upgrade.name=Block Charging Upgrade
 
 ### TOOLTIPS ###
 info.solarflux.energy.stored1=Stored: %,d FE
-info.solarflux.energy.stored2=Stored: %,d/%,d FE
+info.solarflux.energy.stored2=Stored: %s/%s FE
 info.solarflux.energy.generation=Generation: %,d FE/tick
 info.solarflux.energy.transfer=Transfer: %,d FE/tick
 info.solarflux.energy.capacity=Capacity: %,d FE

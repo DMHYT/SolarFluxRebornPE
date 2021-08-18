@@ -4,7 +4,7 @@ const createSolarGuiFor = (header: string) => {
         location: { x: 0, y: 0, width: 1000, height: UI.getScreenHeight() },
         params: {},
         drawing: [
-            {type: "background", color: android.graphics.Color.argb(90, 0, 0, 0)},
+            {type: "background", color: Color.argb(90, 0, 0, 0)},
             {type: "bitmap", bitmap: "sfr.solarui", x: 275, y: offset, scale: 2.5},
             {type: "bitmap", bitmap: "sfr.bar_back", x: 640, y: offset + 100, scale: 2.5},
             {type: "bitmap", bitmap: "sfr.bar_back", x: 590, y: offset + 100, scale: 2.5},

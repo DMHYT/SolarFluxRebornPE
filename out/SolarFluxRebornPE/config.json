@@ -2,6 +2,8 @@
     "enabled": true,
     "pickup_energy_loss": 5,
     "sun_intensity_update_interval": 100,
+    "rain_multiplier": 0.6,
+    "thunder_multiplier": 0.4,
     "panel_stats": {
         "sfr_1": {
             "generation": 1,

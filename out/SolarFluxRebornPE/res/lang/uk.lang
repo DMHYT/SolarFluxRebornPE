@@ -28,7 +28,7 @@ item.solarflux:block_charging_upgrade.name=Покращення: Зарядка 
 
 ### TOOLTIPS ###
 info.solarflux.energy.stored1=Зберігається: %,d FE
-info.solarflux.energy.stored2=Зберігається: %,d/%,d FE
+info.solarflux.energy.stored2=Зберігається: %s/%s FE
 info.solarflux.energy.generation=Генерація: %,d FE/тік
 info.solarflux.energy.transfer=Передача: %,d FE/тік
 info.solarflux.energy.capacity=Ємність: %,d FE
