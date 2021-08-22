@@ -1,6 +1,12 @@
 createItem("blank_upgrade");
 createItem("block_charging_upgrade");
-createItem("block_charging_upgrade_bound");
+IDRegistry.genItemID("sfr_block_charging_upgrade_bound");
+Item.createItem("sfr_block_charging_upgrade_bound", "item.solarflux:block_charging_upgrade.name", {name: "block_charging_upgrade", meta: 0}, {stack: 1, isTech: true});
+Item.setGlint(ItemID.sfr_block_charging_upgrade_bound, true);
+Item.registerNameOverrideFunction(ItemID.sfr_block_charging_upgrade_bound, (item, name) => {
+    if(item.extra == null) return "Block Charging Upgrade (BROKEN)";
+    return `${name}\n§7X: ${item.extra.getInt("PosX")}, Y: ${item.extra.getInt("PosY")}, Z: ${item.extra.getInt("PosZ")}, Dimension: ${item.extra.getInt("Dim")}`;
+});
 createItem("capacity_upgrade");
 createItem("dispersive_upgrade");
 createItem("efficiency_upgrade");
@@ -23,11 +29,6 @@ createStandardPanel("8");
 createItem("transfer_rate_upgrade");
 createItem("traversal_upgrade");
 Item.getItemById("sfr_block_charging_upgrade").setMaxStackSize(1);
-(() => {
-    const item = Item.getItemById("sfr_block_charging_upgrade_bound");
-    item.setMaxStackSize(1);
-    item.setGlint(true);
-})();
 Item.getItemById("sfr_capacity_upgrade").setMaxStackSize(10);
 Item.getItemById("sfr_dispersive_upgrade").setMaxStackSize(1);
 Item.getItemById("sfr_efficiency_upgrade").setMaxStackSize(20);
@@ -55,9 +56,10 @@ Item.registerUseFunction(ItemID.sfr_block_charging_upgrade, (coords, item, block
         }
     }
 });
-Item.registerUseFunction(ItemID.sfr_block_charging_upgrade_bound, (coords, item, block, player) => Entity.getSneaking(player) && Entity.setCarriedItem(player, ItemID.sfr_block_charging_upgrade, 1, 0, null));
+Item.registerUseFunction(ItemID.sfr_block_charging_upgrade_bound, (coords, item, block, player) => Entity.getSneaking(player) && !~SFR_STUFF.indexOf(block.id) && Entity.setCarriedItem(player, ItemID.sfr_block_charging_upgrade, 1, 0, null));
 
 const block_charging_upgrade_validator = (tile: TileEntity, stack: ItemInstance) => {
+    if(stack.extra.getInt("Dim") !== tile.blockSource.getDimension()) return false;
     const tilePos = BlockPosUtils.fromTile(tile);
     const otherTilePos = { x: stack.extra.getInt("PosX"), y: stack.extra.getInt("PosY"), z: stack.extra.getInt("PosZ") } as BlockPos;
     if(BlockPosUtils.distanceSq(tilePos, otherTilePos) <= 256) {
@@ -103,18 +105,18 @@ SolarUpgrades.registerUpgrade(ItemID.sfr_dispersive_upgrade, {
                     return fe - ChargeItemRegistry.addEnergyTo(slot, "RF", Math.min(fe, ChargeItemRegistry.getMaxCharge(slot.id) - ChargeItemRegistry.getEnergyStored(slot)), 1);
             }
             for(let i=0; i<4; i++){
-                let slot = actor.getArmor(i);
+                const slot = actor.getArmor(i);
                 if(isValid(slot.id))
                     return fe - ChargeItemRegistry.addEnergyTo(slot, "RF", Math.min(fe, ChargeItemRegistry.getMaxCharge(slot.id) - ChargeItemRegistry.getEnergyStored(slot)), 1);
             }
             return fe;
         }
-        let fetch = tile.blockSource.fetchEntitiesInAABB(tile.x - 16, tile.y - 16, tile.z - 16, tile.x + 16, tile.y + 16, tile.z + 16, EEntityType.PLAYER, false);
+        const fetch = tile.blockSource.fetchEntitiesInAABB(tile.x - 16, tile.y - 16, tile.z - 16, tile.x + 16, tile.y + 16, tile.z + 16, EEntityType.PLAYER, false);
         for(let p in fetch){
-            let player = fetch[p];
-            let mod: number = Math.max(0, 1 - BlockPosUtils.distanceSq(BlockPosUtils.fromEntity(player), BlockPosUtils.fromTile(tile)) / 256);
-            let transfer: number = Math.round(tile.initialTransfer * mod);
-            let sent: number = Math.min(Math.round(tile.data.energy * mod), transfer);
+            const player = fetch[p];
+            const mod: number = Math.max(0, 1 - BlockPosUtils.distanceSq(BlockPosUtils.fromEntity(player), BlockPosUtils.fromTile(tile)) / 256);
+            const transfer: number = Math.round(tile.initialTransfer * mod);
+            const sent: number = Math.min(Math.round(tile.data.energy * mod), transfer);
             tile.data.energy -= sent - chargePlayer(player, sent);
         }
     }
@@ -123,20 +125,18 @@ SolarUpgrades.registerUpgrade(ItemID.sfr_efficiency_upgrade, {
     getMaxUpgrades: () => 20,
     update: (tile, amount) => tile.data.generation *= (1 + amount * .05)
 });
-Callback.addCallback("ItemUse", (coords, item, block, ie, player) => {
-    if(item.id == 280 && (block.id == VanillaBlockID.furnace || block.id == VanillaBlockID.lit_furnace)) {
-        Game.message("" + BlockSource.getDefaultForActor(player).getBlockEntity(coords.x, coords.y, coords.z).getCompoundTag().toScriptable());
-    }
-});
 SolarUpgrades.registerUpgrade(ItemID.sfr_furnace_upgrade, {
     getMaxUpgrades: () => 1,
-    update: (tile) => {
-        let t: Nullable<NativeTileEntity> = tile.blockSource.getBlockEntity(tile.x, tile.y - 1, tile.z);
-        if(t != null && t.getType() == ETileEntityType.FURNACE) {
-            if(t.getSlot(0).id != 0 && t.getSlot(1).count == 0 && t.getCompoundTag().getShort("CookTime") == 0 && tile.data.energy >= 1000){
-                t.setSlot(1, 5, 1, 0);
-                tile.data.energy -= 1000;
-            }
+    update: (panel) => {
+        const furnace = panel.blockSource.getBlockEntity(panel.x, panel.y - 1, panel.z);
+        if(
+            furnace !== null && furnace.getType() == ETileEntityType.FURNACE &&
+            furnace.getSlot(0).id != 0 && furnace.getSlot(1).count == 0 &&
+            furnace.getCompoundTag().getShort("BurnTime") == 0 &&
+            panel.data.energy >= 1000
+        ) {
+            furnace.setSlot(1, 5, 1, 0);
+            panel.data.energy -= 1000;
         }
     }
 });

@@ -1,4 +1,4 @@
-  {
+{
     "compilerOptions": {
         "allowJs": true,
         "removeComments": true,
@@ -6,7 +6,7 @@
         "downlevelIteration": true,
         "target": "ES5",
         "lib": ["ESNext"],
-        "outFile": "out/SolarFluxRebornPE/main.js"
+        "outFile": "out/Solar Flux Reborn/main.js"
     },
     "compileOnSave": false,
     "include": [
@@ -21,7 +21,5 @@
         "source/footer.ts",
         "source/api.ts"
     ],
-    "exclude": [
-        "tools/declarations/SolarFluxAPI.d.ts"
-    ]
+    "exclude": [ "tools/declarations/SolarFluxAPI.d.ts" ]
 }

@@ -41,12 +41,22 @@ namespace SFRTile {
         private readonly __sfr__: boolean = true;
 
         public init(): void {
+            this.data.traversalObj = new Traversal();
             this.data.canSeeSky = this.blockSource.canSeeSky(this.x, this.y + 1, this.z);
             this.calculateEfficiency();
             this.updateGenerationWithSunIntensity();
             this.container.setGlobalAddTransferPolicy((cont, name, id, count, data, extra, player) => {
                 if(name.startsWith("slotUpgrade")) {
-                    return SolarUpgrades.isUpgrade(id) && SolarUpgrades.getUpgrade(id)?.canInstall?.apply(null, [this, { id, count, data, extra }, this.container]) ? count : 0;
+                    const isUpgrade = SolarUpgrades.isUpgrade(id);
+                    if(!isUpgrade) return 0;
+                    const upgrade = SolarUpgrades.getUpgrade(id);
+                    const canInstall = upgrade.canInstall(this, { id, count, data, extra }, this.container);
+                    if(!canInstall) return 0;
+                    const already = this.data.upgradeMap[id];
+                    if(!already) return count;
+                    const willbe = already + count;
+                    if(willbe <= upgrade.getMaxUpgrades()) return count;
+                    return willbe - upgrade.getMaxUpgrades();
                 } else if(name == "slotCharge") {
                     return ChargeItemRegistry.isValidItem(id, "RF", 1) ? count : 0;
                 }
@@ -57,34 +67,34 @@ namespace SFRTile {
         public getUpgrades(type: number): number {
             let c: number = 0;
             for(let i=0; i<5; i++) {
-                let stack: ItemContainerSlot = this.container.getSlot(`slotUpgrade${i}`);
+                const stack: ItemContainerSlot = this.container.getSlot(`slotUpgrade${i}`);
                 if(!stack.isEmpty() && stack.id == type) c += stack.count;
             }
             return c;
         }
 
         private tryPutUpgrades(id: number, count: number, data: number, extra: ItemExtraData, player: number, inventorySlot: number, isSingle: boolean, sound: boolean): void {
-            let amt: number = this.getUpgrades(id);
-            let iu: SolarUpgrades.UpgradeParams = SolarUpgrades.getUpgrade(id);
+            const amt: number = this.getUpgrades(id);
+            const iu: SolarUpgrades.UpgradeParams = SolarUpgrades.getUpgrade(id);
             if(iu != null && amt < iu.getMaxUpgrades() && iu.canInstall(this, {id: id, count: count, data: data, extra: extra}, this.container)) {
                 let installed: boolean = false;
-                let actor = new PlayerActor(player);
+                const actor = new PlayerActor(player);
                 for(let i=0; i<5; i++) {
                     let stack: ItemContainerSlot = this.container.getSlot(`slotUpgrade${i}`);
                     if(stack.id == id && stack.extra == extra) {
-                        let allow: number = isSingle ? 1 : Math.min(iu.getMaxUpgrades() - this.getUpgrades(id), Math.min(Item.getMaxStack(id) - count, count));
+                        const allow: number = isSingle ? 1 : Math.min(iu.getMaxUpgrades() - this.getUpgrades(id), Math.min(Item.getMaxStack(id) - count, count));
                         actor.setInventorySlot(inventorySlot, id, count - allow, data, extra);
                         this.container.setSlot(`slotUpgrade${i}`, id, count + allow, data, extra);
                         installed = true; break;
                     } else if(stack.isEmpty()) {
-                        let allow: number = isSingle ? 1 : Math.min(iu.getMaxUpgrades() - this.getUpgrades(id), count);
+                        const allow: number = isSingle ? 1 : Math.min(iu.getMaxUpgrades() - this.getUpgrades(id), count);
                         actor.setInventorySlot(inventorySlot, id, count - allow, data, extra);
                         this.container.setSlot(`slotUpgrade${i}`, id, allow, data, extra);
                         installed = true; break;
                     }
                     this.container.sendChanges();
                 }
-                if(installed && sound) Sounds.anvil(this.x, this.y, this.z, this.dimension);
+                installed && sound && Sounds.anvil(this.x, this.y, this.z, this.dimension);
             }
         }
 
@@ -133,10 +143,10 @@ namespace SFRTile {
 
         private fillUpgradeMap(): void {
             for(let i=0; i<5; i++) {
-                let slot = this.container.getSlot(`slotUpgrade${i}`);
-                let upgrade = SolarUpgrades.getUpgrade(slot.id);
+                const slot = this.container.getSlot(`slotUpgrade${i}`);
+                const upgrade = SolarUpgrades.getUpgrade(slot.id);
                 if(upgrade != null) {
-                    let map = this.data.upgradeMap;
+                    const map = this.data.upgradeMap;
                     if(!map[slot.id]) map[slot.id] = 0;
                     map[slot.id] = Math.min(map[slot.id] + slot.count, upgrade.getMaxUpgrades());
                     if(slot.extra != null) this.data.extraMap[slot.id] = slot.extra;
@@ -148,19 +158,19 @@ namespace SFRTile {
             this.resetUpgrades();
             this.fillUpgradeMap();
             for(let key in this.data.upgradeMap) {
-                let upgradeId = parseInt(key), upgrade = SolarUpgrades.getUpgrade(upgradeId);
-                upgrade != null && upgrade.update && upgrade.update(this, this.data.upgradeMap[key], this.data.extraMap[upgradeId] ?? null);
+                const upgradeId = parseInt(key), upgrade = SolarUpgrades.getUpgrade(upgradeId);
+                upgrade != null && upgrade.update(this, this.data.upgradeMap[key], this.data.extraMap[upgradeId] ?? null);
             }
             this.updateGenerationWithSunIntensity();
         }
 
         private chargeItem(): void {
-            let slot = this.container.getSlot("slotCharge"),
-                data = ChargeItemRegistry.getItemData(slot.id);
+            const slot = this.container.getSlot("slotCharge");
+            const data = ChargeItemRegistry.getItemData(slot.id);
             if(typeof data !== "undefined") {
-                let type = data.energy,
-                    ratio = EnergyTypeRegistry.getValueRatio("FE", type),
-                    amount = Math.round(Math.min(this.data.energy, this.data.transfer) * ratio);
+                const type = data.energy;
+                const ratio = EnergyTypeRegistry.getValueRatio("FE", type);
+                const amount = Math.round(Math.min(this.data.energy, this.data.transfer) * ratio);
                 this.data.energy -= Math.round(ChargeItemRegistry.addEnergyToSlot(slot, type, amount, data.tier) / ratio);
             }
         }
@@ -176,21 +186,20 @@ namespace SFRTile {
             this.data.energy += Math.min(this.data.capacity - this.data.energy, this.data.finalGeneration);
             this.chargeItem();
             for(let hor = 2; hor < 6; hor++){
-                let pos = BlockPosUtils.offset(BlockPosUtils.fromTile(this), hor),
-                    tile = TileEntity.getTileEntity(pos.x, pos.y, pos.z, this.blockSource);
+                const pos = BlockPosUtils.offset(BlockPosUtils.fromTile(this), hor);
+                const tile = TileEntity.getTileEntity(pos.x, pos.y, pos.z, this.blockSource);
                 if(tile == null) continue;
                 if(tile.__sfr__) this.autoBalanceEnergy(tile as PanelTile);
             }
             if(this.data.traversal.length > 0)
                 for(let i=0; i<this.data.traversal.length; ++i){
-                    let traverse: BlockPosFace = this.data.traversal[i],
-                        tile = TileEntity.getTileEntity(traverse.x, traverse.y, traverse.z, this.blockSource);
+                    const traverse: BlockPosFace = this.data.traversal[i];
+                    const tile = TileEntity.getTileEntity(traverse.x, traverse.y, traverse.z, this.blockSource);
                     if(tile == null) continue;
                     if(tile.isEnergyTile && !tile.__sfr__) {
-                        let etile = tile as EnergyTile;
-                        if(etile.blockSource && etile.canReceiveEnergy(traverse.side, "RF")) {
+                        if(tile.blockSource && (tile as EnergyTile).canReceiveEnergy(traverse.side, "RF")) {
                             const amount = Math.min(this.data.energy, this.data.transfer);
-                            this.data.energy -= etile.energyReceive("RF", amount, amount);
+                            this.data.energy -= (tile as EnergyTile).energyReceive("RF", amount, amount);
                         }
                     }
                 }
@@ -204,27 +213,27 @@ namespace SFRTile {
         }
 
         private autoBalanceEnergy(solar: PanelTile): number {
-            let delta: number = this.data.energy - solar.data.energy;
+            const delta: number = this.data.energy - solar.data.energy;
             if(delta < 0) return solar.autoBalanceEnergy(this);
             else if(delta > 0) return this.extractEnergy(solar.receiveEnergyInternal(this.extractEnergy(solar.receiveEnergyInternal(delta / 2, true), true), false), false);
             return 0;
         }
 
         private extractEnergy(maxExtract: number, simulate: boolean): number {
-            let energyExtracted: number = Math.min(this.data.energy, Math.min(this.data.transfer, maxExtract));
+            const energyExtracted: number = Math.min(this.data.energy, Math.min(this.data.transfer, maxExtract));
             if(!simulate) this.data.energy -= energyExtracted;
             return energyExtracted;
         }
 
         private receiveEnergyInternal(maxReceive: number, simulate: boolean): number {
-            let energyReceived: number = Math.min(Math.min(this.data.capacity - this.data.energy, JavaInt.MAX_VALUE), Math.min(this.data.transfer, maxReceive));
+            const energyReceived: number = Math.min(Math.min(this.data.capacity - this.data.energy, JavaInt.MAX_VALUE), Math.min(this.data.transfer, maxReceive));
             if(!simulate) this.data.energy += energyReceived;
             return energyReceived;
         }
 
         public click(id: number, count: number, data: number, coords: Callback.ItemUseCoordinates, player: number, extra: ItemExtraData): void {
             if(Entity.getSneaking(player)){
-                let carried = Entity.getCarriedItem(player);
+                const carried = Entity.getCarriedItem(player);
                 carried.count > 0 && SolarUpgrades.isUpgrade(carried.id) && this.tryPutUpgrades(id, count, data, extra, player, new PlayerActor(player).getSelectedSlot(), false, true);
             } else {
                 Game.prevent();
@@ -273,12 +282,12 @@ namespace SFRTile {
     export function createPanelTileFor(id: string, height: number, generation: number, capacity: number, transfer: number): void {
         TileEntity.registerPrototype(BlockID[id], new PanelTile(id, height, generation, capacity, transfer));
         EnergyTileRegistry.addEnergyTypeForId(BlockID[id], RF);
-        let slots: {[key: string]: SlotData} = {};
+        const slots: {[key: string]: SlotData} = {};
         for(let i=0; i<5; i++) 
             slots[`slotUpgrade${i}`] = {
                 input: true, output: true, 
                 isValid: (item, s, tileEntity: PanelTile) => SolarUpgrades.isUpgrade(item.id) && 
-                                                             SolarUpgrades.getUpgrade(item.id)?.canInstall?.apply(null, [tileEntity, item, tileEntity.container])
+                                                             SolarUpgrades.getUpgrade(item.id).canInstall(tileEntity, item, tileEntity.container)
             }
         slots["slotCharge"] = {input: true, output: true, isValid: (item: ItemInstance) => ChargeItemRegistry.isValidItem(item.id, "RF", 1)};
         StorageInterface.createInterface(BlockID[id], { slots: slots });

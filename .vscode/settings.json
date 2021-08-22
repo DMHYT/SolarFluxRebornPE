@@ -9,7 +9,7 @@
         "**/tools": true,
         ".gitignore": true,
         "LICENSE": true,
-        "**/*.md": true,
+        //"**/*.md": true,
         ".vscode": true
     }
 }

@@ -1,11 +1,11 @@
 namespace SunUtils {
 
     export function calculateCelestialAngle(worldTime: number, partialTicks: number): number {
-        let i: number = worldTime % 24000;
+        const i: number = worldTime % 24000;
         let f: number = (i + partialTicks) / 24000 - 0.25;
         if(f < 0) ++f;
         if(f > 1) --f;
-        let f1: number = 1 - (Math.cos(f * Math.PI) + 1) / 2;
+        const f1: number = 1 - (Math.cos(f * Math.PI) + 1) / 2;
         f += (f1 - f) / 3;
         return f;
     }
@@ -32,13 +32,13 @@ namespace Sounds {
     export function anvil(x: number, y: number, z: number, dimension: number){
         new NetworkConnectedClientList()
             .setupDistancePolicy(x, y, z, dimension, 64)
-            .send("sfr.anvil", {x: x, y: y, z: z} as Vector);
+            .send("sfr.anvil", { x, y, z } as Vector);
     }
 
     export function levelup(x: number, y: number, z: number, dimension: number){
         new NetworkConnectedClientList()
             .setupDistancePolicy(x, y, z, dimension, 64)
-            .send("sfr.levelup", {x: x, y: y, z: z} as Vector);
+            .send("sfr.levelup", { x, y, z } as Vector);
     }
 
 }
@@ -46,7 +46,7 @@ namespace Sounds {
 namespace BlockPosUtils {
     
     export function BlockPosFaceFromBlockPos(bp: BlockPos, side: number, rate?: number): BlockPosFace {
-        return {...bp, side: side, rate: rate ?? 1};
+        return {...bp, side, rate: rate ?? 1};
     }
 
     export function offset(pos: BlockPos, face: number): BlockPos {
@@ -83,12 +83,12 @@ namespace BlockPosUtils {
     }
 
     export function fromEntity(entity: number): BlockPos {
-        let pos: Vector = Entity.getPosition(entity);
+        const pos: Vector = Entity.getPosition(entity);
         return { ...pos, dimension: Entity.getDimension(entity) };
     }
 
     export function fromTile(tile: TileEntity): BlockPos {
-        return { x: tile.x, y: tile.y, z: tile.z, dimension: tile.dimension } as BlockPos;
+        return { x: tile.x, y: tile.y, z: tile.z, dimension: tile.dimension };
     }
 
     export function compare(pos1: BlockPos, pos2: BlockPos): boolean {

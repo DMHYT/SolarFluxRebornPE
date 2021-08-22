@@ -1,6 +1,6 @@
 const createSolarGuiFor = (header: string) => {
-    let offset: number = Math.floor((UI.getScreenHeight() - 440) / 2);
-    let win: UI.Window = new UI.Window({
+    const offset: number = Math.floor((UI.getScreenHeight() - 440) / 2);
+    const win: UI.Window = new UI.Window({
         location: { x: 0, y: 0, width: 1000, height: UI.getScreenHeight() },
         params: {},
         drawing: [
@@ -11,15 +11,15 @@ const createSolarGuiFor = (header: string) => {
             {type: "bitmap", bitmap: "classic_frame_tab_right", x: 710, y: offset, scale: 2.5}
         ],
         elements: (() => {
-            let result: UI.ElementSet = {
-                textHeader: {type: "text", x: 500, y: -3, font: {color: android.graphics.Color.WHITE, size: 20, alignment: UI.Font.ALIGN_CENTER}, text: header},
+            const result: UI.ElementSet = {
+                textHeader: {type: "text", x: 500, y: -3, font: {color: Color.WHITE, size: 20, alignment: UI.Font.ALIGN_CENTER}, text: header},
                 energyBarScale: {type: "scale", x: 590, y: offset + 100, scale: 2.5, direction: 1, value: 0, bitmap: "sfr.energy_bar_scale"},
                 sunBarScale: {type: "scale", x: 640, y: offset + 100, scale: 2.5, direction: 1, value: 0, bitmap: "sfr.sun_bar_scale"},
-                textCharge: {type: "text", x: 290, y: offset + 20, width: 200, height: 25, font: {color: android.graphics.Color.BLACK, size: 20}, text: JavaString.format(Translation.translate("info.solarflux.energy.stored1"), [Long.valueOf(0)])},
-                textCapacity: {type: "text", x: 290, y: offset + 42, width: 200, height: 25, font: {color: android.graphics.Color.BLACK, size: 20}, text: JavaString.format(Translation.translate("info.solarflux.energy.capacity"), [Long.valueOf(0)])},
-                textGeneration: {type: "text", x: 290, y: offset + 70, width: 200, height: 25, font: {color: android.graphics.Color.BLACK, size: 20}, text: JavaString.format(Translation.translate("info.solarflux.energy.generation"), [Long.valueOf(0)])},
-                textEfficiency: {type: "text", x: 290, y: offset + 95, width: 200, height: 25, font: {color: android.graphics.Color.BLACK, size: 20}, text: JavaString.format(Translation.translate("info.solarflux.energy.efficiency"), [JavaInt.valueOf(0)])},
-                textInventory: {type: "text", x: 290, y: offset + 210, width: 200, height: 25, font: {color: android.graphics.Color.BLACK, size: 20}, text: Translation.translate("sfr.inventory")},
+                textCharge: {type: "text", x: 290, y: offset + 20, width: 200, height: 25, font: {color: Color.BLACK, size: 20}, text: JavaString.format(Translation.translate("info.solarflux.energy.stored1"), [Long.valueOf(0)])},
+                textCapacity: {type: "text", x: 290, y: offset + 42, width: 200, height: 25, font: {color: Color.BLACK, size: 20}, text: JavaString.format(Translation.translate("info.solarflux.energy.capacity"), [Long.valueOf(0)])},
+                textGeneration: {type: "text", x: 290, y: offset + 70, width: 200, height: 25, font: {color: Color.BLACK, size: 20}, text: JavaString.format(Translation.translate("info.solarflux.energy.generation"), [Long.valueOf(0)])},
+                textEfficiency: {type: "text", x: 290, y: offset + 95, width: 200, height: 25, font: {color: Color.BLACK, size: 20}, text: JavaString.format(Translation.translate("info.solarflux.energy.efficiency"), [JavaInt.valueOf(0)])},
+                textInventory: {type: "text", x: 290, y: offset + 210, width: 200, height: 25, font: {color: Color.BLACK, size: 20}, text: Translation.translate("sfr.inventory")},
                 slotCharge: {type: "slot", x: 640, y: offset + 20, bitmap: "sfr.charge_slot", size: 45, isValid: (id) => ChargeItemRegistry.isValidItem(id, "RF", 1), visual: false},
                 closeButton: {type: "closeButton", bitmap: "classic_close_button", bitmap2: "classic_close_button_down", scale: 3, x: 710, y: offset}
             }

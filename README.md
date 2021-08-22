@@ -69,6 +69,8 @@ ModAPI.addAPICallback("SolarFluxAPI", function(api) {
         // Then you can create more recipe builders, if you want.
 });
 ```
+## **Creating custom solar panel upgrades**
+### **There is also solar panel upgrade registry module exported by SolarFluxAPI, to create custom upgrades, use `api.UpgradeRegistry`. You can find all the functions [here](source/core/upgrades.ts) and [here](tools/declarations/SolarFluxAPI.d.ts), and also [here](source/footer.ts) you can find code examples for it.**
 ***
 ## **Credits**
 ### **Me (InnerCore mod developer)**
