@@ -80,6 +80,7 @@ const DIFFERENT_PANEL_HEIGHT = __config__.getBool("different_panel_height");
 const RAIN_MULTIPLIER = clamp(__config__.getNumber("rain_multiplier").floatValue(), 0, 1);
 const THUNDER_MULTIPLIER = clamp(__config__.getNumber("thunder_multiplier").floatValue(), 0, 1);
 const CONTAINER_UPDATE_INTERVAL = __config__.getBool("specify_container_update_interval") ? clamp(__config__.getNumber("container_update_interval").intValue(), 2, 20) : 1;
+const ENERGY_AUTO_BALANCING_INTERVAL = __config__.getBool("energy_auto_balancing") ? clamp(__config__.getNumber("energy_auto_balancing_interval").intValue(), 1, 100) : -1;
 
 const Long = java.lang.Long;
 const JavaString = java.lang.String;

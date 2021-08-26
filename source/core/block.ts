@@ -45,8 +45,8 @@ namespace SolarPanel {
         Block.createBlock(`sfr_${name}`, [{name: `tile.solarflux:solar_panel_${name}.name`, texture: [[`sfr_${name}_base`, 0], [`sfr_${name}_top`, 0], [`sfr_${name}_base`, 0]], inCreative: true}], {base: 1, destroytime: 5, solid: true, sound: "stone", translucency: 1});
         ToolAPI.registerBlockMaterial(BlockID[`sfr_${name}`], "stone", 1, false);
         setupModelFor(name, height);
-        SFRTile.createPanelTileFor(`sfr_${name}`, height, generation, capacity, transfer);
-        Block.registerDropFunction(BlockID[`sfr_${name}`], (coords, blockID, blockData, level, enchant, item, region) => {
+        SFRTile.createPanelTileFor(`sfr_${name}`, generation, capacity, transfer);
+        Block.registerDropFunctionForID(BlockID[`sfr_${name}`], (coords, blockID, blockData, level, enchant, item, region) => {
             const toStore = SFRTile.TEMPORARY_TILES[`${coords.x}:${coords.y}:${coords.z}:${region.getDimension()}`];
             const extra = new ItemExtraData();
             if(toStore) {
@@ -55,7 +55,7 @@ namespace SolarPanel {
             } else Logger.Log("Energy to be saved into itemstack from broken panel was not found!", "SolarFluxReborn DEBUG");
             return [[blockID, 1, blockData, toStore ? extra : null]];
         }, 1);
-        Block.registerPlaceFunction(BlockID[`sfr_${name}`], (coords, item, block, player, region) => {
+        Block.registerPlaceFunctionForID(BlockID[`sfr_${name}`], (coords, item, block, player, region) => {
             const r = coords.relative;
             region.setBlock(r.x, r.y, r.z, BlockID[`sfr_${name}`], 0);
             TileEntity.addTileEntity(r.x, r.y, r.z, region);
@@ -77,7 +77,10 @@ namespace SolarPanel {
 
 }
 
-const createStandardPanel = (name: string) => {
+const createPanel = (name: string) => {
+    const nameNumeric = parseInt(name);
     const stats = getStatsFor(`sfr_${name}`);
-    SolarPanel.createPanelFromStats(name, DIFFERENT_PANEL_HEIGHT ? parseInt(name) / 16 : 6/16, stats.generation, stats.capacity, stats.transfer);
+    if(!Number.isNaN(nameNumeric)) 
+        SolarPanel.createPanelFromStats(name, DIFFERENT_PANEL_HEIGHT ? nameNumeric / 16 : 6/16, stats.generation, stats.capacity, stats.transfer);
+    else SolarPanel.createPanelFromStats(name, 6/16, stats.generation, stats.capacity, stats.transfer);
 }

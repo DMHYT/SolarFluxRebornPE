@@ -166,30 +166,39 @@ namespace SFRTile {
 
         private chargeItem(): void {
             const slot = this.container.getSlot("slotCharge");
-            const data = ChargeItemRegistry.getItemData(slot.id);
-            if(typeof data !== "undefined") {
-                const type = data.energy;
-                const ratio = EnergyTypeRegistry.getValueRatio("FE", type);
-                const amount = Math.round(Math.min(this.data.energy, this.data.transfer) * ratio);
-                this.data.energy -= Math.round(ChargeItemRegistry.addEnergyToSlot(slot, type, amount, data.tier) / ratio);
+            if(slot.id != 0) {
+                const data = ChargeItemRegistry.getItemData(slot.id);
+                if(typeof data !== "undefined") {
+                    const type = data.energy;
+                    const ratio = EnergyTypeRegistry.getValueRatio("FE", type);
+                    const amount = Math.round(Math.min(this.data.energy, this.data.transfer) * ratio);
+                    this.data.energy -= Math.round(ChargeItemRegistry.addEnergyToSlot(slot, type, amount, data.tier) / ratio);
+                }
             }
         }
 
         public tick(): void {
             StorageInterface.checkHoppers(this);
             if(World.getThreadTime() % 20 == 0) {
-                this.data.canSeeSky = this.blockSource.canSeeSky(this.x, this.y + 1, this.z);
+                const canSeeSky = this.blockSource.canSeeSky(this.x, this.y + 1, this.z);
+                if(canSeeSky == !this.data.canSeeSky) {
+                    this.data.canSeeSky = canSeeSky;
+                    this.calculateEfficiency();
+                }
                 this.data.traversal = [];
             }
             World.getThreadTime() % SUN_INTENSITY_UPDATE_INTERVAL == 0 && this.calculateEfficiency();
             this.applyUpgrades();
-            this.data.energy += Math.min(this.data.capacity - this.data.energy, this.data.finalGeneration);
+            if(this.data.energy > this.data.capacity)
+                this.data.energy += Math.min(this.data.capacity - this.data.energy, this.data.finalGeneration);
             this.chargeItem();
-            for(let hor = 2; hor < 6; hor++){
-                const pos = BlockPosUtils.offset(BlockPosUtils.fromTile(this), hor);
-                const tile = TileEntity.getTileEntity(pos.x, pos.y, pos.z, this.blockSource);
-                if(tile == null) continue;
-                if(tile.__sfr__) this.autoBalanceEnergy(tile as PanelTile);
+            if(ENERGY_AUTO_BALANCING_INTERVAL != -1 && (ENERGY_AUTO_BALANCING_INTERVAL == 1 || World.getThreadTime() % ENERGY_AUTO_BALANCING_INTERVAL == 0)) {
+                for(let hor = 2; hor < 6; hor++){
+                    const pos = BlockPosUtils.offset(BlockPosUtils.fromTile(this), hor);
+                    const tile = TileEntity.getTileEntity(pos.x, pos.y, pos.z, this.blockSource);
+                    if(tile == null) continue;
+                    if(tile.__sfr__) this.autoBalanceEnergy(tile as PanelTile);
+                }
             }
             if(this.data.traversal.length > 0)
                 for(let i=0; i<this.data.traversal.length; ++i){
@@ -253,7 +262,7 @@ namespace SFRTile {
             }
         }
 
-        constructor(name: string, height: number, generation: number, capacity: number, transfer: number) {
+        constructor(name: string, generation: number, capacity: number, transfer: number) {
             super({
                 energy: 0,
                 canSeeSky: false,
@@ -279,8 +288,8 @@ namespace SFRTile {
 
     }
 
-    export function createPanelTileFor(id: string, height: number, generation: number, capacity: number, transfer: number): void {
-        TileEntity.registerPrototype(BlockID[id], new PanelTile(id, height, generation, capacity, transfer));
+    export function createPanelTileFor(id: string, generation: number, capacity: number, transfer: number): void {
+        TileEntity.registerPrototype(BlockID[id], new PanelTile(id, generation, capacity, transfer));
         EnergyTileRegistry.addEnergyTypeForId(BlockID[id], RF);
         const slots: {[key: string]: SlotData} = {};
         for(let i=0; i<5; i++) 

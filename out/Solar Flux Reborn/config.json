@@ -6,6 +6,8 @@
     "container_update_interval": 2,
     "rain_multiplier": 0.6,
     "thunder_multiplier": 0.4,
+    "energy_auto_balancing": true,
+    "energy_auto_balancing_interval": 1,
     "panel_stats": {
         "sfr_1": {
             "generation": 1,

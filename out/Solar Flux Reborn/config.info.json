@@ -71,7 +71,33 @@
             "min": 2,
             "max": 20,
             "value": 2,
-            "displayIf": "enabled && specify_container_update_interval"
+            "displayIf": "enabled"
+        },
+        "energy_auto_balancing": {
+            "name": {
+                "en": "Energy auto-balancing",
+                "ru": "Авто-балансировка энергии"
+            },
+            "description": {
+                "en": "When this is enabled, panels standing nearby to each other will make their energy storages equal every tick (or every specified number of ticks). Disabling this may increase TPS, if you have a kind of panel field anywhere.",
+                "ru": "Когда эта настройка включена, панели, стоящие рядом друг к другу, будут уравнивать количество энергии в своих хранилищах каждый тик (или каждое указанное число тиков). Отключение этой настройки может увеличить TPS, если у вас где-то есть что-то типа поля панелей."
+            },
+            "displayIf": "enabled"
+        },
+        "energy_auto_balancing_interval": {
+            "name": {
+                "en": "Energy auto-balancing interval",
+                "ru": "Интервал между авто-балансировками энергии"
+            },
+            "description": {
+                "en": "Interval between moments, when panels standing nearby to each other will make their energy storages equal. Default is 1 tick, making this interval bigger may increase TPS.",
+                "ru": "Интервал между моментами, когда панели, стоящие рядом, уравнивают количество энергии в своих хранилищах. Значение по умолчанию - 1 тик, увеличение этого интервала может увеличить TPS."
+            },
+            "type": "SeekBar",
+            "min": 1,
+            "max": 100,
+            "value": 1,
+            "displayIf": "enabled && energy_auto_balancing"
         },
         "panel_stats": {
             "name": {
