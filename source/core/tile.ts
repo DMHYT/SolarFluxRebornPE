@@ -189,7 +189,7 @@ namespace SFRTile {
             }
             World.getThreadTime() % SUN_INTENSITY_UPDATE_INTERVAL == 0 && this.calculateEfficiency();
             this.applyUpgrades();
-            if(this.data.energy > this.data.capacity)
+            if(this.data.capacity > this.data.energy)
                 this.data.energy += Math.min(this.data.capacity - this.data.energy, this.data.finalGeneration);
             this.chargeItem();
             if(ENERGY_AUTO_BALANCING_INTERVAL != -1 && (ENERGY_AUTO_BALANCING_INTERVAL == 1 || World.getThreadTime() % ENERGY_AUTO_BALANCING_INTERVAL == 0)) {
