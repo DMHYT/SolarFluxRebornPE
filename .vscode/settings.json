@@ -1,0 +1,15 @@
+{
+    "vscode.tsc.compiler.alertTSConfigChanges": "never",
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/tools": true,
+        ".gitignore": true,
+        "LICENSE": true,
+        //"**/*.md": true,
+        ".vscode": true
+    }
+}

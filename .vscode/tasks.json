@@ -1,0 +1,19 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Download docs",
+            "type": "shell",
+            "command": "tools\\loaddocs.bat",
+            "group": "build",
+            "problemMatcher": []
+        },
+        {
+            "label": "Build mod",
+            "type": "typescript",
+            "tsconfig": "tsconfig.json",
+            "group": "build",
+            "problemMatcher": ["$tsc"]
+        }
+    ]
+}

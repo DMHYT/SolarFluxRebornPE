@@ -1,0 +1,104 @@
+{
+    "enabled": true,
+    "pickup_energy_loss": 5,
+    "sun_intensity_update_interval": 100,
+    "specify_container_update_interval": false,
+    "container_update_interval": 2,
+    "rain_multiplier": 0.6,
+    "thunder_multiplier": 0.4,
+    "energy_auto_balancing": true,
+    "energy_auto_balancing_interval": 1,
+    "panel_stats": {
+        "sfr_1": {
+            "generation": 1,
+            "transfer": 8,
+            "capacity": 25000
+        },
+        "sfr_2": {
+            "generation": 8,
+            "transfer": 64,
+            "capacity": 125000
+        },
+        "sfr_3": {
+            "generation": 32,
+            "transfer": 256,
+            "capacity": 425000
+        },
+        "sfr_4": {
+            "generation": 128,
+            "transfer": 1024,
+            "capacity": 2000000
+        },
+        "sfr_5": {
+            "generation": 512,
+            "transfer": 4096,
+            "capacity": 8000000
+        },
+        "sfr_6": {
+            "generation": 2048,
+            "transfer": 16384,
+            "capacity": 32000000
+        },
+        "sfr_7": {
+            "generation": 8192,
+            "transfer": 65536,
+            "capacity": 64000000
+        },
+        "sfr_8": {
+            "generation": 32768,
+            "transfer": 262144,
+            "capacity": 128000000
+        },
+        "sfr_neutronium": {
+            "generation": 8388608,
+            "transfer": 32768000,
+            "capacity": 131072000000
+        },
+        "sfr_infinity": {
+            "generation": 16777216,
+            "transfer": 65536000,
+            "capacity": 262144000000
+        },
+        "sfr_darkmatter": {
+            "generation": 65536,
+            "transfer": 512000,
+            "capacity": 256000000
+        },
+        "sfr_wyvern": {
+            "generation": 65536,
+            "transfer": 512000,
+            "capacity": 256000000
+        },
+        "sfr_draconic": {
+            "generation": 262144,
+            "transfer": 1024000,
+            "capacity": 512000000
+        },
+        "sfr_chaotic": {
+            "generation": 524288,
+            "transfer": 4096000,
+            "capacity": 2048000000
+        },
+        "sfr_alchemical": {
+            "generation": 8,
+            "transfer": 64,
+            "capacity": 125000
+        },
+        "sfr_brass": {
+            "generation": 32,
+            "transfer": 256,
+            "capacity": 425000
+        },
+        "sfr_thaumium": {
+            "generation": 128,
+            "transfer": 1024,
+            "capacity": 2000000
+        },
+        "sfr_void": {
+            "generation": 512,
+            "transfer": 4096,
+            "capacity": 8000000
+        }
+    },
+    "different_panel_height": false
+}

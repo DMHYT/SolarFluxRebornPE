@@ -1,0 +1,126 @@
+{
+    "description": {
+        "en": "This is a configuration of Solar Flux Reborn mod",
+        "ru": "Это конфигурация мода Solar Flux Reborn"
+    },
+    "properties": {
+        "pickup_energy_loss": {
+            "name": {
+                "en": "Pickup Energy Loss",
+                "ru": "Потери энергии при ломании"
+            },
+            "description": {
+                "en": "How much energy (percent) will get lost while picking up the solar panel?",
+                "ru": "Сколько энергии (в процентах) потеряет солнечная панель при ломании?"
+            },
+            "type": "SeekBar",
+            "min": 1,
+            "max": 100,
+            "value": 5,
+            "displayIf": "enabled"
+        },
+        "sun_intensity_update_interval": {
+            "name": {
+                "en": "Sun Intensity Update Interval",
+                "ru": "Интервал между обновлениями яркости солнца"
+            },
+            "description": {
+                "en": "Interval in ticks, between which solar panels will update sun intensity value. Setting too small interval can cause big lags.",
+                "ru": "Интервал в тиках, между которым солнечные панели будут обновлять значение яркости солнца. Установка слишком маленького интервала может вызвать большие лаги."
+            },
+            "type": "SeekBar",
+            "min": 1,
+            "max": 200,
+            "displayIf": "enabled"
+        },
+        "rain_multiplier": {
+            "name": {
+                "en": "Rain Multiplier",
+                "ru": "Множитель при дожде"
+            },
+            "displayIf": "enabled"
+        },
+        "thunder_multiplier": {
+            "name": {
+                "en": "Thunder Multiplier",
+                "ru": "Множитель при грозе"
+            },
+            "displayIf": "enabled"
+        },
+        "specify_container_update_interval": {
+            "name": {
+                "en": "Specify Container Update Interval",
+                "ru": "Указать интервал обновлений контейнера"
+            },
+            "description": {
+                "en": "After enabling this, you can specify container update interval, it can increase TPS if there are many panels in one place.",
+                "ru": "После включения этой настройки, вы сможете указать интервал обновлений контейнера, это может увеличить TPS если у вас много панелей в одном месте."
+            },
+            "displayIf": "enabled"
+        },
+        "container_update_interval": {
+            "name": {
+                "en": "Container Update Interval",
+                "ru": "Интервал обновлений контейнера"
+            },
+            "description": {
+                "en": "Container update interval in ticks, if this option is disabled, the interval is 1 tick (20 updates per second)",
+                "ru": "Интервал обновлений контейнера в тиках, если эта настройка отключена, интервал 1 тик (20 обновлений в секунду)"
+            },
+            "type": "SeekBar",
+            "min": 2,
+            "max": 20,
+            "value": 2,
+            "displayIf": "enabled"
+        },
+        "energy_auto_balancing": {
+            "name": {
+                "en": "Energy auto-balancing",
+                "ru": "Авто-балансировка энергии"
+            },
+            "description": {
+                "en": "When this is enabled, panels standing nearby to each other will make their energy storages equal every tick (or every specified number of ticks). Disabling this may increase TPS, if you have a kind of panel field anywhere.",
+                "ru": "Когда эта настройка включена, панели, стоящие рядом друг к другу, будут уравнивать количество энергии в своих хранилищах каждый тик (или каждое указанное число тиков). Отключение этой настройки может увеличить TPS, если у вас где-то есть что-то типа поля панелей."
+            },
+            "displayIf": "enabled"
+        },
+        "energy_auto_balancing_interval": {
+            "name": {
+                "en": "Energy auto-balancing interval",
+                "ru": "Интервал между авто-балансировками энергии"
+            },
+            "description": {
+                "en": "Interval between moments, when panels standing nearby to each other will make their energy storages equal. Default is 1 tick, making this interval bigger may increase TPS.",
+                "ru": "Интервал между моментами, когда панели, стоящие рядом, уравнивают количество энергии в своих хранилищах. Значение по умолчанию - 1 тик, увеличение этого интервала может увеличить TPS."
+            },
+            "type": "SeekBar",
+            "min": 1,
+            "max": 100,
+            "value": 1,
+            "displayIf": "enabled && energy_auto_balancing"
+        },
+        "panel_stats": {
+            "name": {
+                "en": "Panel Stats",
+                "ru": "Характеристики панелей"
+            },
+            "description": {
+                "en": "Here you can customize generation, transfer and capacity values of each panel. You should better change these values directly in config.json file, to see large values in more readable format.",
+                "ru": "Здесь вы можете настроить значения генерации, передачи и ёмкости каждой панели. Лучше изменять эти значения прямо в файле config.json, чтобы видеть большие значения в более читабельном формате."
+            },
+            "collapsible": true,
+            "displayIf": "enabled"
+        },
+        "different_panel_height": {
+            "name": {
+                "en": "Different Panel Height",
+                "ru": "Разная высота панелей"
+            },
+            "description": {
+                "en": "Every non-custom panel will have different box height depending on its level",
+                "ru": "Каждая некастомная панель будет иметь разную высоту бокса в зависимости от своего уровня"
+            },
+            "displayIf": "enabled"
+        }
+    }
+}
