@@ -40,6 +40,13 @@ namespace SFRTile {
          */
         private readonly __sfr__: boolean = true;
 
+        /**
+         * Waila energy view support
+         */
+        public getEnergyStorage(): number {
+            return this.data.capacity;
+        }
+
         public init(): void {
             this.data.traversalObj = new Traversal();
             this.data.canSeeSky = this.blockSource.canSeeSky(this.x, this.y + 1, this.z);
