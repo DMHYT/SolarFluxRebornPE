@@ -129,14 +129,17 @@ SolarUpgrades.registerUpgrade(ItemID.sfr_furnace_upgrade, {
     getMaxUpgrades: () => 1,
     update: (panel) => {
         const furnace = panel.blockSource.getBlockEntity(panel.x, panel.y - 1, panel.z);
-        if(
-            furnace !== null && furnace.getType() == ETileEntityType.FURNACE &&
-            furnace.getSlot(0).id != 0 && furnace.getSlot(1).count == 0 &&
-            furnace.getCompoundTag().getShort("BurnTime") == 0 &&
-            panel.data.energy >= 1000
-        ) {
-            furnace.setSlot(1, 5, 1, 0);
-            panel.data.energy -= 1000;
+        if(furnace !== null) {
+            const type = furnace.getType();
+            if(
+                (type == ETileEntityType.FURNACE || type == 38 || type == 39) &&
+                furnace.getSlot(0).id != 0 && furnace.getSlot(1).count == 0 &&
+                furnace.getCompoundTag().getShort("BurnTime") == 0 &&
+                panel.data.energy >= 1000
+            ) {
+                furnace.setSlot(1, 5, 1, 0);
+                panel.data.energy -= 1000;
+            }
         }
     }
 });
