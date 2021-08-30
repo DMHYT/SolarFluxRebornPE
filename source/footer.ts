@@ -156,6 +156,9 @@ SolarUpgrades.registerUpgrade(ItemID.sfr_traversal_upgrade, {
 });
 
 Callback.addCallback("PostLoaded", () => {
+    // Redstone lamp and clock recipes fix
+    Recipes.getWorkbenchRecipesByResult(123, 1, 0).size() == 0 && addShaped(123, 1, 0, [" r ", "rgr", " r "], ['r', 331, 0, 'g', 89, 0]);
+    Recipes.getWorkbenchRecipesByResult(347, 1, 0).size() == 0 && addShaped(347, 1, 0, [" g ", "grg", " g "], ['g', 266, 0, 'r', 331, 0]);
     addShaped(ItemID.sfr_blank_upgrade, 1, 0, [" c ", "cmc", " c "], ['c', 4, 0, 'm', ItemID.sfr_mirror, 0]);
     addShaped(ItemID.sfr_block_charging_upgrade, 1, 0, ["prp", "rur", "prp"], ['p', 368, 0, 'r', 152, 0, 'u', ItemID.sfr_dispersive_upgrade, 0]);
     addShaped(ItemID.sfr_capacity_upgrade, 1, 0, [" r ", "rbr", "rdr"], ['r', 331, 0, 'b', ItemID.sfr_blank_upgrade, 0, 'd', 57, 0]);
@@ -171,7 +174,7 @@ Callback.addCallback("PostLoaded", () => {
     addShaped(ItemID.sfr_photovoltaic_cell_6, 1, 0, ["eee", "gdg", "qpq"], ['e', 388, 0, 'g', 89, 0, 'd', 57, 0, 'q', 155, 0, 'p', ItemID.sfr_photovoltaic_cell_5, 0]);
     addShaped(BlockID.sfr_1, 1, 0, ["mmm", "prp", "ppp"], ['m', ItemID.sfr_mirror, 0, 'p', 5, -1, 'r', 331, 0]);
     addShaped(BlockID.sfr_2, 1, 0, ["sss", "sps", "sss"], ['s', BlockID.sfr_1, 0, 'p', 33, 0]);
-    addShaped(BlockID.sfr_3, 2, 0, ["ppp", "srs", "sis"], ['p', ItemID.sfr_photovoltaic_cell_1, 0, 's', BlockID.sfr_2, 0, 'r', VanillaItemID.comparator, -1, 'i', 42, 0]);
+    addShaped(BlockID.sfr_3, 2, 0, ["ppp", "srs", "sis"], ['p', ItemID.sfr_photovoltaic_cell_1, 0, 's', BlockID.sfr_2, 0, 'r', VanillaItemID.repeater, -1, 'i', 42, 0]);
     addShaped(BlockID.sfr_4, 2, 0, ["ppp", "scs", "sis"], ['p', ItemID.sfr_photovoltaic_cell_2, 0, 's', BlockID.sfr_3, 0, 'c', VanillaItemID.clock, -1, 'i', 42, 0]);
     addShaped(BlockID.sfr_5, 2, 0, ["ppp", "sds", "sgs"], ['p', ItemID.sfr_photovoltaic_cell_3, 0, 's', BlockID.sfr_4, 0, 'd', 348, 0, 'g', 41, 0]);
     addShaped(BlockID.sfr_6, 2, 0, ["ppp", "sls", "sds"], ['p', ItemID.sfr_photovoltaic_cell_4, 0, 's', BlockID.sfr_5, 0, 'l', VanillaBlockID.redstone_lamp, -1, 'd', 57, 0]);
