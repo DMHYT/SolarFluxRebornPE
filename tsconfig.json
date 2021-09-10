@@ -19,7 +19,8 @@
         "source/core/tile.ts",
         "source/core/block.ts",
         "source/footer.ts",
-        "source/api.ts"
+        "source/api.ts",
+        "source/compat/avaritia.ts"
     ],
     "exclude": [ "tools/declarations/SolarFluxAPI.d.ts" ]
 }
