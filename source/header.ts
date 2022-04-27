@@ -16,7 +16,7 @@
 // OFFICIAL PORT OF THE SOLAR FLUX REBORN MOD
 // FROM MINECRAFT FORGE TO INNER CORE MOD LAUNCHER
 
-// © vsdum 2021
+// © dsdekhm 2022
 // YouTube DMH (Russian) - https://www.youtube.com/channel/UCdQKuakM3rnuGV_1VA6XUKQ
 // YouTube vstannumdum (English) - https://www.youtube.com/channel/UCXHpQ_SQ8VPigIvbbzHWWdA
 // My VK - https://www.vk.com/vstannumdum
