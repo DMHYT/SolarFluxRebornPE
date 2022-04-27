@@ -1,7 +1,7 @@
 ModAPI.addAPICallback("AvaritiaAPI", Avaritia => {
     createPanel("neutronium");
     createPanel("infinity");
-    Avaritia.addExtremeShapedRecipe({ id: BlockID.sfr_neutronium, count: 2, data: 0 }, [
+    Avaritia.addExtremeShapedRecipe("solar_panel_neutronium", { id: BlockID.sfr_neutronium, count: 2, data: 0 }, [
         "  NN NN  ",
         " NCCPCCN ",
         "NC  U  CN",
@@ -19,7 +19,7 @@ ModAPI.addAPICallback("AvaritiaAPI", Avaritia => {
         'Q', ItemID.neutron_pile, 0,
         'I', ItemID.infinity_catalyst, 0
     ]);
-    Avaritia.addExtremeShapedRecipe({ id: BlockID.sfr_infinity, count: 3, data: 0 }, [
+    Avaritia.addExtremeShapedRecipe("solar_panel_infinity", { id: BlockID.sfr_infinity, count: 3, data: 0 }, [
         "  NN NN  ",
         " NCCBCCN ",
         "NC  U  CN",
