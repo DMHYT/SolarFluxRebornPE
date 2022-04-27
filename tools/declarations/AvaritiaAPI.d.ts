@@ -10,14 +10,20 @@ declare interface AvaritiaAPI {
      * Same params as in `Recipe.addShaped` InnerCore method, 
      * but with 9x9 possible grid.
      */
-    addExtremeShapedRecipe(result: ItemInstance, mask: string[], keys: (string | number)[], func?: ExtremeCraftFunction): void;
+    addExtremeShapedRecipe(recipeName: string, result: ItemInstance, mask: string[], keys: (string | number)[], func?: ExtremeCraftFunction): void;
     /**
      * Creates new shapeless recipe in extreme crafting table.
      * Almost same params as in `Recipe.addShapeless` InnerCore method, 
      * but with possible maximum of 81 ingredients.
      * @param items array of arrays, containing id and data respectively of each ingredient
      */
-    addExtremeShapelessRecipe(result: ItemInstance, items: [number, number][], func?: ExtremeCraftFunction): void;
+    addExtremeShapelessRecipe(recipeName: string, result: ItemInstance, items: [number, number][], func?: ExtremeCraftFunction): void;
+    /**
+     * Removes extreme crafting table recipe by the name,
+     * which is passed as the first parameter in
+     * `addExtremeShapedRecipe` and `addExtremeShapelessRecipe` methods.
+     */
+    removeExtremeRecipe(recipeName: string): void;
     /**
      * Creates new item that can be produced in neutronium compressor from given material count
      * @param outputId numeric id of the result item
@@ -29,6 +35,8 @@ declare interface AvaritiaAPI {
      * If true, material count will always be of the value you specified.
      */
     addCompressorRecipe(outputId: number, inputId: number, inputCount: number, inputData: number, specific: boolean): void;
+    /** Removes neutronium compressor recipe by given input material ID */
+    removeCompressorRecipe(inputId: number): void;
     /** @returns some non-exported variable, module or function from the mod, if you need it */
     requireGlobal(something: string): any;
 }
