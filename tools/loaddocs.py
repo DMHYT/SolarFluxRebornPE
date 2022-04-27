@@ -10,7 +10,7 @@ def toMillis(secs):
 def download(file):
     global first, prev, last
     prev = last
-    response = req.urlopen("https://docs.mineprogramming.org/" + file + ".d.ts")
+    response = req.urlopen("https://docs.mineprogramming.org/headers/" + file + ".d.ts")
     content = response.read().decode("utf-8")
     get_path = getcwd() + "\\declarations\\" + file + ".d.ts"
     with open(get_path, 'w') as docs:
